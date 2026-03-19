@@ -6,7 +6,7 @@ Frontend : Vue.js (Composition API) + Pinia + Vue Router
 Backend : Laravel (API REST)
 
 Authentification : Laravel Sanctum
-
+Police : Raleway
 Gestion des rôles / sécurité : Laravel Fortify
 Interface utilisateur 
 Interface admin

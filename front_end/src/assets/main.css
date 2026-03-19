@@ -1,35 +1,47 @@
-@import './base.css';
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+:root {
+  --primary: #1A1A2E;
+  --secondary: #FF6B35;
+  --neutral: #F5F5F5;
+  --background: #FFFFFF;
+  --text: #333333;
+  --surface: #FFFFFF;
+  --border: #E0E0E0;
 }
 
-a,
-.green {
+[data-theme='dark'] {
+  --primary: #FF6B35;
+  --secondary: #1A1A2E;
+  --neutral: #212121;
+  --background: #121212;
+  --text: #F5F5F5;
+  --surface: #1E1E1E;
+  --border: #333333;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background-color: var(--background);
+  color: var(--text);
+  margin: 0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+a {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+  color: inherit;
 }
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+* {
+  box-sizing: border-box;
 }
 
-@media (min-width: 1024px) {
-  body {
+.main-container {
     display: flex;
-    place-items: center;
-  }
+    min-height: 100vh;
+}
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+.content-area {
+    flex: 1;
+    padding: 2rem;
+    background-color: var(--background);
 }
