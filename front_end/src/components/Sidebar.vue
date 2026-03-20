@@ -3,15 +3,7 @@
     class="sidebar" 
     :class="{ 'sidebar--collapsed': collapsed }"
   >
-    <div class="sidebar__header">
-      <div class="sidebar__logo" v-if="!collapsed">
-        <i class='bx bxs-shopping-bag'></i>
-        <span>E-Shop</span>
-      </div>
-      <button class="sidebar__toggle" @click="collapsed = !collapsed">
-        <i :class="collapsed ? 'bx bx-chevron-right' : 'bx bx-chevron-left'"></i>
-      </button>
-    </div>
+
 
     <nav class="sidebar__nav">
       <router-link 
@@ -27,32 +19,65 @@
     </nav>
 
     <div class="sidebar__footer">
-      <button class="sidebar__theme-toggle" @click="themeStore.toggleTheme">
-        <i :class="themeStore.dark ? 'bx bx-sun' : 'bx bx-moon'"></i>
-        <span v-if="!collapsed">{{ themeStore.dark ? 'Mode Clair' : 'Mode Sombre' }}</span>
-      </button>
-      
-      <div v-if="authStore.isAuthenticated" class="sidebar__user">
-          <button @click="handleLogout" class="sidebar__logout">
-              <i class='bx bx-log-out'></i>
-              <span v-if="!collapsed">Déconnexion</span>
-          </button>
+      <div v-if="authStore.isAuthenticated" class="sidebar__user" ref="userMenuRef">
+         <div class="user-profile">
+            <div class="user-avatar" :style="{ backgroundColor: 'var(--primary)', color: '#fff' }">
+               {{ getInitials(authStore.user?.name) }}
+            </div>
+            <div class="user-info" v-if="!collapsed">
+               <span class="user-name">{{ authStore.user?.name }}</span>
+               <span class="user-email">{{ authStore.user?.email }}</span>
+            </div>
+            <button class="user-menu-btn" v-if="!collapsed" @click.stop="toggleUserMenu">
+               <i class='bx bx-dots-vertical-rounded'></i>
+            </button>
+            
+            <div v-if="showUserMenu && !collapsed" class="user-modal">
+               <button class="user-modal-item">
+                  <i class='bx bx-cog'></i>
+                  Modifier les paramètres
+               </button>
+               <button class="user-modal-item" @click="handleLogout">
+                  <i class='bx bx-log-out'></i>
+                  Déconnexion
+               </button>
+            </div>
+         </div>
       </div>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useThemeStore } from '@/stores/theme';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 
-const themeStore = useThemeStore();
 const authStore = useAuthStore();
 const router = useRouter();
 
 const collapsed = ref(false);
+
+const showUserMenu = ref(false);
+const userMenuRef = ref(null);
+
+const toggleUserMenu = () => {
+    showUserMenu.value = !showUserMenu.value;
+};
+
+const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+};
+
+const closeMenu = (e) => {
+    if (userMenuRef.value && !userMenuRef.value.contains(e.target)) {
+        showUserMenu.value = false;
+    }
+};
+
+onMounted(() => document.addEventListener('click', closeMenu));
+onUnmounted(() => document.removeEventListener('click', closeMenu));
 
 const navItems = computed(() => {
     const items = [];
@@ -90,15 +115,16 @@ const handleLogout = async () => {
 <style scoped>
 .sidebar {
   width: 260px;
-  height: 100vh;
-  background-color: var(--primary);
-  color: #FFFFFF;
+  height: calc(100vh - 60px);
+  background-color: var(--background);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
   position: sticky;
-  top: 0;
+  top: 60px;
   z-index: 100;
+  border-right: 1px solid var(--border);
 }
 
 .sidebar--collapsed {
@@ -117,15 +143,14 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--secondary);
+  font-size: 1.5rem;
+  color: var(--primary);
 }
 
 .sidebar__toggle {
   background: none;
   border: none;
-  color: #FFFFFF;
+  color: var(--text);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -145,16 +170,18 @@ const handleLogout = async () => {
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1.75rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+  opacity: 0.7;
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
 }
 
 .sidebar__link:hover,
 .sidebar__link.router-link-active {
-  color: #FFFFFF;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-left-color: var(--secondary);
+  color: var(--primary);
+  opacity: 1;
+  background-color: var(--neutral);
+  border-left-color: var(--primary);
 }
 
 .sidebar__link i {
@@ -163,35 +190,113 @@ const handleLogout = async () => {
 }
 
 .sidebar__footer {
-  padding: 1.5rem;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border);
 }
 
-.sidebar__theme-toggle,
-.sidebar__logout {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
+.sidebar__user {
+  position: relative;
+}
+
+.user-profile {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.user-profile:hover {
+  background-color: var(--neutral);
+}
+
+.user-avatar {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.user-email {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-menu-btn {
+  background: none;
+  border: none;
   cursor: pointer;
-  font-size: 1rem;
-  padding: 0.5rem 0.25rem;
+  color: var(--text);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.user-menu-btn:hover {
+  background-color: var(--neutral);
+}
+
+.user-modal {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  left: 0;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  z-index: 10;
+}
+
+.user-modal-item {
+  background: none;
+  border: none;
   width: 100%;
-  transition: color 0.2s;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.sidebar__theme-toggle:hover,
-.sidebar__logout:hover {
-  color: #FFFFFF;
-}
-
-.sidebar__theme-toggle i,
-.sidebar__logout i {
-  font-size: 1.5rem;
+.user-modal-item:hover {
+  background-color: var(--neutral);
+  color: var(--primary);
 }
 </style>

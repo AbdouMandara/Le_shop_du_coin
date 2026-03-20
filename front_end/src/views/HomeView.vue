@@ -1,48 +1,61 @@
 <template>
   <div class="home-view">
-    <header class="home-header">
-      <div class="home-header__content">
-        <h1>Bienvenue sur E-Shop</h1>
-        <p>Découvrez nos produits exceptionnels pour tous vos besoins.</p>
-        <router-link :to="productsUrl" class="btn-primary">Voir tous les produits</router-link>
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">L'art de l'exceptionnel, au quotidien.</h1>
+        <p class="hero-subtitle">Découvrez notre sélection de produits haut de gamme conçus pour sublimer votre style de vie et répondre à toutes vos exigences.</p>
+        <div class="hero-actions">
+          <router-link :to="productsUrl" class="btn-cta">Explorer la collection <i class='bx bx-right-arrow-alt'></i></router-link>
+        </div>
       </div>
-    </header>
-
-    <section class="section">
-        <h2 class="section__title">🔥 Nouveautés</h2>
-        <div v-if="productStore.loading" class="loading">
-            <i class='bx bx-loader-alt bx-spin'></i> Chargement...
-        </div>
-        <div v-else class="product-grid">
-            <ProductCard 
-                v-for="product in productStore.products.slice(0, 4)" 
-                :key="product.id" 
-                :product="product"
-            />
-        </div>
-        <div v-if="!productStore.loading && productStore.products.length === 0" class="empty">
-            Aucun produit disponible pour le moment.
-        </div>
     </section>
 
-    <section class="section section--light">
-        <div class="features">
-            <div class="feature-item">
-                <i class='bx bx-truck'></i>
-                <h3>Livraison Rapide</h3>
-                <p>Recevez vos commandes en un temps record.</p>
-            </div>
-            <div class="feature-item">
-                <i class='bx bx-shield-quarter'></i>
-                <h3>Paiement Sécurisé</h3>
-                <p>Vos transactions sont protégées à 100%.</p>
-            </div>
-            <div class="feature-item">
-                <i class='bx bx-support'></i>
-                <h3>Support 24/7</h3>
-                <p>Notre équipe est là pour vous aider à tout moment.</p>
-            </div>
+    <!-- FEATURES SECTION -->
+    <section class="features-section">
+      <div class="feature-card">
+        <div class="feature-icon"><i class='bx bx-rocket'></i></div>
+        <div class="feature-text">
+          <h3>Livraison Express</h3>
+          <p>Recevez vos commandes en 24h chrono.</p>
         </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class='bx bx-check-shield'></i></div>
+        <div class="feature-text">
+          <h3>Paiement Sécurisé</h3>
+          <p>Vos transactions sont 100% chiffrées.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class='bx bx-headphone'></i></div>
+        <div class="feature-text">
+          <h3>Support Premium</h3>
+          <p>Une équipe dédiée à votre écoute 7j/7.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS SECTION -->
+    <section class="products-section">
+      <div class="section-header">
+        <h2 class="section-title">En Tendance</h2>
+        <router-link :to="productsUrl" class="link-more">Voir toute la boutique <i class='bx bx-right-arrow-alt'></i></router-link>
+      </div>
+      
+      <div v-if="productStore.loading" class="loading-state">
+         <i class='bx bx-loader-alt bx-spin'></i> Chargement de nos collections...
+      </div>
+      <div v-else class="products-grid">
+         <ProductCard 
+            v-for="product in productStore.products.slice(0, 4)" 
+            :key="product.id" 
+            :product="product"
+         />
+      </div>
+      <div v-if="!productStore.loading && productStore.products.length === 0" class="empty-state">
+         Notre collection est en cours de renouvellement. Revenez très vite !
+      </div>
     </section>
   </div>
 </template>
@@ -75,108 +88,213 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 4rem;
-  padding-bottom: 4rem;
+  padding: 2rem 2.5rem 6rem;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
-.home-header {
-  background: linear-gradient(135deg, var(--primary) 0%, #2a2a4e 100%);
-  color: #FFFFFF;
-  padding: 6rem 2rem;
-  border-radius: 20px;
+/* HERO SECTION */
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  margin: 0 1rem;
+  padding: 8rem 2rem;
+  background-color: var(--neutral);
+  border-radius: 32px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
-.home-header__content {
-    max-width: 800px;
-    margin: 0 auto;
+.hero-content {
+  max-width: 850px;
+  position: relative;
+  z-index: 2;
 }
 
-.home-header h1 {
-  font-size: 3.5rem;
-  margin: 0;
+.hero-title {
+  font-size: 4.5rem;
   font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 2rem;
+  letter-spacing: -0.04em;
 }
 
-.home-header p {
+.hero-subtitle {
   font-size: 1.25rem;
-  opacity: 0.9;
-  margin: 1.5rem 0 2.5rem;
+  color: #666;
+  margin-bottom: 3rem;
+  line-height: 1.7;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.btn-primary {
-    background-color: var(--secondary);
-    color: #FFFFFF;
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: transform 0.2s;
-    display: inline-block;
+[data-theme='dark'] .hero-subtitle {
+  color: #AAA;
 }
 
-.section {
-    padding: 0 2.5rem;
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }
 
-.section__title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
-    color: var(--primary);
+.btn-cta {
+  background-color: var(--primary);
+  color: #FFFFFF;
+  padding: 1.1rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
 }
 
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2.5rem;
+.btn-cta i {
+  font-size: 1.3rem;
+  transition: transform 0.3s ease;
 }
 
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 3rem;
-    padding: 4rem 2rem;
-    background-color: var(--neutral);
-    border-radius: 20px;
+.btn-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
 }
 
-.feature-item {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+.btn-cta:hover i {
+  transform: translateX(4px);
 }
 
-.feature-item i {
+/* FEATURES SECTION */
+.features-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  padding: 2.5rem 2rem;
+  border-radius: 24px;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+  border-color: var(--primary);
+}
+
+.feature-icon {
+  width: 70px;
+  height: 70px;
+  background-color: var(--neutral);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  color: var(--primary);
+  flex-shrink: 0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.feature-card:hover .feature-icon {
+  background-color: var(--primary);
+  color: #FFFFFF;
+}
+
+.feature-text h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.feature-text p {
+  margin: 0;
+  color: #888;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* PRODUCTS SECTION */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.link-more {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: gap 0.2s, opacity 0.2s;
+  padding-bottom: 0.5rem;
+}
+
+.link-more:hover {
+  gap: 0.85rem;
+  opacity: 0.8;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2.5rem;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 6rem;
+  color: #888;
+  background-color: var(--neutral);
+  border-radius: 24px;
+  border: 1px dashed var(--border);
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-state i {
+  font-size: 3rem;
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .hero-title {
     font-size: 3rem;
-    color: var(--secondary);
-}
-
-.feature-item h3 {
-    font-size: 1.25rem;
-    margin: 0;
-    font-weight: 700;
-}
-
-.feature-item p {
-    color: #666;
-    margin: 0;
-}
-
-.loading, .empty {
-    text-align: center;
-    padding: 3rem;
-    font-size: 1.2rem;
-    color: #888;
-}
-
-[data-theme='dark'] .section__title {
-    color: var(--secondary);
-}
-
-[data-theme='dark'] .feature-item p {
-    color: #AAA;
+  }
+  .hero-section {
+    padding: 5rem 1.5rem;
+  }
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
 }
 </style>
