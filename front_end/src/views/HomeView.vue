@@ -4,7 +4,7 @@
       <div class="home-header__content">
         <h1>Bienvenue sur E-Shop</h1>
         <p>Découvrez nos produits exceptionnels pour tous vos besoins.</p>
-        <router-link to="/products" class="btn-primary">Voir tous les produits</router-link>
+        <router-link :to="productsUrl" class="btn-primary">Voir tous les produits</router-link>
       </div>
     </header>
 
@@ -48,11 +48,22 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useProductStore } from '@/stores/products';
+import { useAuthStore } from '@/stores/auth';
 import ProductCard from '@/components/ProductCard.vue';
 
 const productStore = useProductStore();
+const authStore = useAuthStore();
+
+const productsUrl = computed(() => {
+    if (authStore.isAuthenticated) {
+        if (authStore.isAdmin) return '/admin/products';
+        if (authStore.isLivreur) return '/livreur/products';
+        if (authStore.isUser) return '/client/products';
+    }
+    return '/products';
+});
 
 onMounted(() => {
     productStore.fetchProducts();

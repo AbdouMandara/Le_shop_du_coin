@@ -36,6 +36,16 @@ const router = createRouter({
           meta: { auth: true, role: 'user' },
           children: [
             {
+                path: '',
+                name: 'client-home',
+                component: () => import('../views/HomeView.vue')
+            },
+            {
+                path: 'products',
+                name: 'client-products',
+                component: () => import('../views/ProductsView.vue')
+            },
+            {
                 path: 'favorites',
                 name: 'favorites',
                 component: () => import('../views/FavoritesView.vue')
@@ -61,6 +71,11 @@ const router = createRouter({
               path: '',
               name: 'admin',
               component: () => import('../views/AdminView.vue')
+            },
+            {
+              path: 'products',
+              name: 'admin-products',
+              component: () => import('../views/ProductsView.vue')
             },
             {
               path: 'profile',
@@ -94,7 +109,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore()
   
-  if (!auth.user && auth.isAuthenticated) {
+  if (!auth.user && localStorage.getItem('isLoggedIn') === 'true') {
     await auth.fetchUser()
   }
 
@@ -103,8 +118,7 @@ router.beforeEach(async (to, from, next) => {
     if (to.path === '/' || to.name === 'home') {
       if (auth.isAdmin) return next({ name: 'admin' });
       if (auth.isLivreur) return next({ name: 'livreur' });
-      // For Client, we could redirect to a client dashboard or just stay if / is allowed
-      // Given "routes begin with /client", let's stay or move to a client specific home if it exists
+      if (auth.isUser) return next({ name: 'client-home' });
     }
   }
 

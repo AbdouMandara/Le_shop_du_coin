@@ -46,25 +46,10 @@ class DatabaseSeeder extends Seeder
             'role_id' => $livreurRole->id,
         ]);
 
-        // 4. Sample Categories
-        $cat1 = \App\Models\Category::create(['label' => 'Électronique']);
-        $cat2 = \App\Models\Category::create(['label' => 'Solaire']);
-
-        // 5. Sample Products
-        \App\Models\Product::create([
-            'name' => 'Smartphone Ultra',
-            'price' => 250000,
-            'quantity' => 15,
-            'description' => 'Un smartphone puissant avec un écran OLED.',
-            'category_id' => $cat1->id,
-        ]);
-
-        \App\Models\Product::create([
-            'name' => 'Panneau Solaire 100W',
-            'price' => 75000,
-            'quantity' => 25,
-            'description' => 'Idéal pour le camping et les petites installations.',
-            'category_id' => $cat2->id,
-        ]);
+        // 4. Create Categories and Products
+        \App\Models\Category::factory()
+            ->count(5)
+            ->has(\App\Models\Product::factory()->count(3))
+            ->create();
     }
 }

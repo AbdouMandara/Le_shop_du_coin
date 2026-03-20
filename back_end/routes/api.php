@@ -26,20 +26,27 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Admin routes
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/users', [\App\Http\Controllers\Api\UserController::class, 'index']);
-    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
-    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('categories', CategoryController::class);
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
 });
 
 // Livreur routes
 Route::middleware(['auth:sanctum', 'role:livreur'])->prefix('livreur')->group(function () {
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{product}', [ProductController::class, 'show']);
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
 });
 
 // User (Client) routes
 Route::middleware(['auth:sanctum', 'role:user'])->prefix('client')->group(function () {
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{product}', [ProductController::class, 'show']);
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{category}', [CategoryController::class, 'show']);
+
     Route::apiResource('favorites', \App\Http\Controllers\Api\FavoriteController::class);
     
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);

@@ -59,14 +59,14 @@ const navItems = computed(() => {
 
     if (authStore.isAuthenticated) {
         if (authStore.isUser) {
-            items.push({ label: 'Accueil', path: '/', icon: 'bx bx-home' });
-            items.push({ label: 'Produits', path: '/products', icon: 'bx bx-grid-alt' });
+            items.push({ label: 'Accueil', path: '/client', icon: 'bx bx-home' });
+            items.push({ label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' });
             items.push({ label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart' });
             items.push({ label: 'Panier', path: '/client/cart', icon: 'bx bx-cart' });
             items.push({ label: 'Profil', path: '/client/profile', icon: 'bx bx-user' });
         } else if (authStore.isAdmin) {
             items.push({ label: 'Tableau de bord', path: '/admin', icon: 'bx bx-shield-quarter' });
-            items.push({ label: 'Produits', path: '/products', icon: 'bx bx-grid-alt' });
+            items.push({ label: 'Produits', path: '/admin/products', icon: 'bx bx-grid-alt' });
             items.push({ label: 'Profil', path: '/admin/profile', icon: 'bx bx-user' });
         } else if (authStore.isLivreur) {
             items.push({ label: 'Livraisons', path: '/livreur', icon: 'bx bx-cycling' });

@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('auth', {
         error: null,
     }),
     getters: {
-        isAuthenticated: (state) => !!state.user,
+        isAuthenticated: (state) => state.user,
         isAdmin: (state) => state.user?.role?.label === 'admin',
         isUser: (state) => state.user?.role?.label === 'user',
         isLivreur: (state) => state.user?.role?.label === 'livreur',
@@ -22,6 +22,7 @@ export const useAuthStore = defineStore('auth', {
                 await api.get('http://localhost:8000/sanctum/csrf-cookie');
                 const response = await api.post('/login', credentials);
                 await this.fetchUser();
+                localStorage.setItem('isLoggedIn', 'true');
             } catch (err) {
                 console.error('Auth Error:', err.response || err);
                 this.error = err.response?.data?.message || 'Login failed';
@@ -37,12 +38,14 @@ export const useAuthStore = defineStore('auth', {
                 return response.data;
             } catch (error) {
                 this.user = null;
+                localStorage.removeItem('isLoggedIn');
             }
         },
         async logout() {
             await api.post('/logout');
             this.user = null;
             localStorage.removeItem('user');
+            localStorage.removeItem('isLoggedIn');
         }
     }
 });

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import api from '@/services/api';
+import { useAuthStore } from './auth';
 
 export const useProductStore = defineStore('products', {
     state: () => ({
@@ -9,21 +10,33 @@ export const useProductStore = defineStore('products', {
         loading: false,
     }),
     actions: {
+        _getPrefix() {
+            const auth = useAuthStore();
+            if (auth.isAuthenticated) {
+                if (auth.isAdmin) return '/admin';
+                if (auth.isLivreur) return '/livreur';
+                if (auth.isUser) return '/client';
+            }
+            return '';
+        },
         async fetchProducts() {
             this.loading = true;
             try {
-                const response = await api.get('/products');
+                const prefix = this._getPrefix();
+                const response = await api.get(`${prefix}/products`);
                 this.products = response.data.data;
             } finally {
                 this.loading = false;
             }
         },
         async fetchCategories() {
-            const response = await api.get('/categories');
+            const prefix = this._getPrefix();
+            const response = await api.get(`${prefix}/categories`);
             this.categories = response.data;
         },
         async fetchProduct(id) {
-            const response = await api.get(`/products/${id}`);
+            const prefix = this._getPrefix();
+            const response = await api.get(`${prefix}/products/${id}`);
             this.currentProduct = response.data;
         }
     }
