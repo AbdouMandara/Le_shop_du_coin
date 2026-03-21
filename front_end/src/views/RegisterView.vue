@@ -78,6 +78,9 @@
       <div class="register-footer">
         <p>Déjà un compte ? <router-link to="/login">Se connecter</router-link></p>
       </div>
+      <router-link to="/" class="back-home">
+        <i class='bx bx-arrow-back'></i> Retour à l'accueil
+      </router-link>
     </div>
   </div>
 </template>
@@ -230,5 +233,13 @@ const handleRegister = async () => {
 .register-footer a {
   color: var(--secondary);
   font-weight: 600;
+}
+.back-home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #666 !important;
+    font-weight: 400 !important;
 }
 </style>

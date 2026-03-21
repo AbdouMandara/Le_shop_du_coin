@@ -92,7 +92,6 @@ const navItems = computed(() => {
 
     if (authStore.isAuthenticated) {
         if (authStore.isUser) {
-            items.push({ label: 'Accueil', path: '/client', icon: 'bx bx-home' });
             items.push({ label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' });
             items.push({ label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart' });
             items.push({ label: 'Panier', path: '/client/cart', icon: 'bx bx-cart', id: 'cart' });
@@ -108,7 +107,6 @@ const navItems = computed(() => {
     } else {
         items.push({ label: 'Accueil', path: '/', icon: 'bx bx-home' });
         items.push({ label: 'Produits', path: '/products', icon: 'bx bx-grid-alt' });
-        items.push({ label: 'Connexion', path: '/login', icon: 'bx bx-log-in' });
     }
 
     return items;

@@ -15,7 +15,7 @@
       </div>
     </header>
     <div class="main-layout">
-      <Sidebar />
+      <Sidebar v-if="authStore.isAuthenticated" />
       <main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
