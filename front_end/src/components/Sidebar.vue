@@ -4,7 +4,6 @@
     :class="{ 'sidebar--collapsed': collapsed }"
   >
 
-
     <nav class="sidebar__nav">
       <router-link 
         v-for="item in navItems" 
@@ -15,6 +14,9 @@
       >
         <i :class="item.icon"></i>
         <span v-if="!collapsed">{{ item.label }}</span>
+        <span v-if="item.id === 'cart' && cartTotalCount > 0 && !collapsed" class="cart-badge">
+          {{ cartTotalCount }}
+        </span>
       </router-link>
     </nav>
 
@@ -51,9 +53,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useCartStore } from '@/stores/cart';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
+const cartStore = useCartStore();
 const router = useRouter();
 
 const collapsed = ref(false);
@@ -79,6 +83,10 @@ const closeMenu = (e) => {
 onMounted(() => document.addEventListener('click', closeMenu));
 onUnmounted(() => document.removeEventListener('click', closeMenu));
 
+const cartTotalCount = computed(() => {
+    return cartStore.items.reduce((acc, item) => acc + item.quantity, 0);
+});
+
 const navItems = computed(() => {
     const items = [];
 
@@ -87,7 +95,7 @@ const navItems = computed(() => {
             items.push({ label: 'Accueil', path: '/client', icon: 'bx bx-home' });
             items.push({ label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' });
             items.push({ label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart' });
-            items.push({ label: 'Panier', path: '/client/cart', icon: 'bx bx-cart' });
+            items.push({ label: 'Panier', path: '/client/cart', icon: 'bx bx-cart', id: 'cart' });
             items.push({ label: 'Profil', path: '/client/profile', icon: 'bx bx-user' });
         } else if (authStore.isAdmin) {
             items.push({ label: 'Tableau de bord', path: '/admin', icon: 'bx bx-shield-quarter' });
@@ -187,6 +195,16 @@ const handleLogout = async () => {
 .sidebar__link i {
   font-size: 1.5rem;
   min-width: 24px;
+}
+
+.cart-badge {
+  background-color: var(--secondary);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0.6rem;
+  border-radius: 12px;
+  margin-left: auto;
 }
 
 .sidebar__footer {

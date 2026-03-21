@@ -51,9 +51,9 @@ const formatPrice = (price) => {
 .product-card {
   background-color: var(--background);
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+  transition: box-shadow 0.4s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -61,15 +61,14 @@ const formatPrice = (price) => {
 }
 
 .product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 48px rgba(0,0,0,0.06);
-  border-color: var(--border);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  border-color: var(--primary);
   z-index: 2;
 }
 
 .product-card__image {
   position: relative;
-  height: 260px;
+  height: 200px;
   background-color: var(--neutral);
   overflow: hidden;
   padding: 1rem;
@@ -79,27 +78,22 @@ const formatPrice = (price) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 16px;
-  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.product-card:hover .product-card__image img {
-  transform: scale(1.06);
+  border-radius: 12px;
 }
 
 .product-card__favorite {
   position: absolute;
-  top: 24px;
-  right: 24px;
-  background-color: var(--background);
+  top: 16px;
+  right: 16px;
+  background-color: #FFFFFF;
   border: 1px solid var(--border);
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text);
+  color: #666;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
@@ -107,23 +101,15 @@ const formatPrice = (price) => {
 }
 
 .product-card__favorite:hover {
-  transform: scale(1.1);
   color: #ff4d4d;
-  border-color: #ff4d4d;
 }
 
 .product-card__favorite--active {
   color: #ff4d4d;
-  background-color: rgba(255, 77, 77, 0.1);
-  border-color: rgba(255, 77, 77, 0.2);
-}
-
-.product-card__favorite--active i {
-  transform: scale(1.1);
 }
 
 .product-card__content {
-  padding: 1.75rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -131,11 +117,11 @@ const formatPrice = (price) => {
 }
 
 .product-card__header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .product-card__title {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 700;
   margin: 0 0 0.4rem;
   color: var(--text);
@@ -147,7 +133,7 @@ const formatPrice = (price) => {
 }
 
 .product-card__category {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #888;
   margin: 0;
   text-transform: uppercase;
@@ -165,7 +151,7 @@ const formatPrice = (price) => {
 .product-card__price {
   font-weight: 800;
   color: var(--text);
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   letter-spacing: -0.02em;
 }
 
@@ -173,9 +159,9 @@ const formatPrice = (price) => {
   background-color: var(--neutral);
   color: var(--text);
   border: 1px solid var(--border);
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -184,7 +170,7 @@ const formatPrice = (price) => {
 }
 
 .product-card__add i {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   transition: transform 0.3s ease;
 }
 

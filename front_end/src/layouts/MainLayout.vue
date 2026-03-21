@@ -4,9 +4,15 @@
       <div class="header-logo">
         <span class="header-title">Le shop du coin</span>
       </div>
-      <button class="header-theme-toggle" @click="themeStore.toggleTheme" title="Changer de thème">
-        <i :class="themeStore.dark ? 'bx bx-sun' : 'bx bx-moon'"></i>
-      </button>
+      <div class="header-actions">
+        <button class="header-theme-toggle" @click="themeStore.toggleTheme" title="Changer de thème">
+          <i :class="themeStore.dark ? 'bx bx-sun' : 'bx bx-moon'"></i>
+        </button>
+        <template v-if="!authStore.isAuthenticated">
+          <router-link to="/login" class="header-auth-btn header-login-btn">Connexion</router-link>
+          <router-link to="/register" class="header-auth-btn header-register-btn">Inscription</router-link>
+        </template>
+      </div>
     </header>
     <div class="main-layout">
       <Sidebar />
@@ -25,8 +31,10 @@
 import Sidebar from '@/components/Sidebar.vue';
 import { onMounted } from 'vue';
 import { useThemeStore } from '@/stores/theme';
+import { useAuthStore } from '@/stores/auth';
 
 const themeStore = useThemeStore();
+const authStore = useAuthStore();
 
 onMounted(() => {
   themeStore.applyTheme();
@@ -65,6 +73,9 @@ onMounted(() => {
 
 .header-title {
   color: var(--text);
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.5rem;
+  letter-spacing: 1px;
 }
 
 .header-theme-toggle {
@@ -82,6 +93,47 @@ onMounted(() => {
 
 .header-theme-toggle:hover {
   color: var(--primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-auth-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-login-btn {
+  color: var(--primary);
+  background-color: transparent;
+  border: 1px solid var(--primary);
+}
+
+.header-login-btn:hover {
+  background-color: var(--primary);
+  color: var(--background);
+}
+
+.header-register-btn {
+  color: var(--background);
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.header-register-btn:hover {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  color: var(--background);
 }
 
 .main-layout {
