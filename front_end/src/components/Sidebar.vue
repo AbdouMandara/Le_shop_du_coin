@@ -31,7 +31,7 @@
                <span class="user-email">{{ authStore.user?.email }}</span>
             </div>
             <button class="user-menu-btn" v-if="!collapsed" @click.stop="toggleUserMenu">
-               <i class='bx bx-dots-vertical-rounded'></i>
+               <i class='bx bx-dots-horizontal-rounded'></i>
             </button>
             
             <div v-if="showUserMenu && !collapsed" class="user-modal">

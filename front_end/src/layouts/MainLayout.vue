@@ -73,7 +73,7 @@ onMounted(() => {
 
 .header-title {
   color: var(--text);
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Cookie', cursive;
   font-size: 2.5rem;
   letter-spacing: 1px;
 }
