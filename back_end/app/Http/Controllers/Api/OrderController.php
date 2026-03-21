@@ -31,7 +31,7 @@ class OrderController extends Controller
             'status' => 'pending',
         ]);
 
-        return response()->json($order, 21);
+        return response()->json($order, 201);
     }
 
     public function update(Request $request, Order $order)

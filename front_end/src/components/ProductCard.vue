@@ -20,7 +20,7 @@
       </div>
       <div class="product-card__footer">
         <div v-if="cartItem" class="product-card__qty-controls">
-          <button @click.prevent="updateQty(-1)"><i class='bx bx-minus'></i></button>
+          <button @click.prevent="updateQty(-1)" :disabled="cartItem.quantity <= 1"><i class='bx bx-minus'></i></button>
           <span>{{ cartItem.quantity }}</span>
           <button @click.prevent="updateQty(1)"><i class='bx bx-plus'></i></button>
         </div>
@@ -239,9 +239,14 @@ const formatPrice = (price) => {
   transition: all 0.2s ease;
 }
 
-.product-card__qty-controls button:hover {
+.product-card__qty-controls button:hover:not(:disabled) {
   background-color: var(--primary);
   color: white;
+}
+
+.product-card__qty-controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .product-card__qty-controls span {

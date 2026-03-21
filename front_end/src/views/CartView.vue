@@ -74,13 +74,16 @@ const handleCheckout = async () => {
     loading.value = true;
     try {
         for (const item of cartStore.items) {
-            await orderStore.placeOrder(item.id);
+            for (let i = 0; i < item.quantity; i++) {
+                await orderStore.placeOrder(item.id);
+            }
         }
         cartStore.items = [];
         cartStore.saveCart();
-        router.push({ name: 'profile' }); // Redirect to profile to see orders
+        router.push({ name: 'client-profile' }); // Redirect to profile to see orders
     } catch (err) {
-        alert('Erreur lors de la commande');
+        console.error('Checkout error:', err.response?.data || err);
+        alert('Erreur lors de la commande: ' + (err.response?.data?.message || err.message));
     } finally {
         loading.value = false;
     }
