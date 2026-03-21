@@ -13,12 +13,19 @@
     <div class="product-card__content">
       <div class="product-card__header">
         <h3 class="product-card__title">{{ product.name }}</h3>
-        <p class="product-card__category">{{ product.category?.label }}</p>
+        <div class="product-card__category-price">
+          <p class="product-card__category">{{ product.category?.label }}</p>
+          <span class="product-card__price">{{ formatPrice(product.price) }} FCFA</span>
+        </div>
       </div>
       <div class="product-card__footer">
-        <span class="product-card__price">{{ formatPrice(product.price) }} FCFA</span>
-        <button class="product-card__add" @click.prevent="cartStore.addToCart(product)" aria-label="Ajouter au panier">
-          <i class='bx bx-plus'></i>
+        <div v-if="cartItem" class="product-card__qty-controls">
+          <button @click.prevent="updateQty(-1)"><i class='bx bx-minus'></i></button>
+          <span>{{ cartItem.quantity }}</span>
+          <button @click.prevent="updateQty(1)"><i class='bx bx-plus'></i></button>
+        </div>
+        <button v-else class="product-card__add-btn" @click.prevent="cartStore.addToCart(product)">
+          <i class='bx bx-cart-add'></i> Ajouter au panier
         </button>
       </div>
     </div>
@@ -41,6 +48,22 @@ const cartStore = useCartStore();
 const isFavorite = computed(() => {
     return cartStore.favorites.some(f => f.product_id === props.product.id);
 });
+
+const cartItem = computed(() => {
+    return cartStore.items.find(i => i.id === props.product.id);
+});
+
+const updateQty = (diff) => {
+    if (cartItem.value) {
+        const newQty = cartItem.value.quantity + diff;
+        if (newQty <= 0) {
+            cartStore.removeFromCart(props.product.id);
+        } else {
+            cartItem.value.quantity = newQty;
+            cartStore.saveCart();
+        }
+    }
+};
 
 const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR').format(price);
@@ -131,7 +154,12 @@ const formatPrice = (price) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
+.product-card__category-price{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+}
 .product-card__category {
   font-size: 0.8rem;
   color: #888;
@@ -155,35 +183,73 @@ const formatPrice = (price) => {
   letter-spacing: -0.02em;
 }
 
-.product-card__add {
-  background-color: var(--neutral);
-  color: var(--text);
+.product-card__add-btn {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(26, 26, 46, 0.1);
+}
+
+.product-card__add-btn i {
+  font-size: 1.3rem;
+}
+
+.product-card__add-btn:hover {
+  background-color: var(--secondary);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
+}
+
+.product-card__qty-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: transparent;
+  border: 2px solid var(--border);
+  border-radius: 50px;
+  width: 100%;
+  height: 46px;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+  padding: 0 0.35em;
+}
+
+
+.product-card__qty-controls button {
+  background: transparent;
   border: 1px solid var(--border);
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  border-radius : 50%;
+  padding: 0.25em;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.product-card__add i {
   font-size: 1.2rem;
-  transition: transform 0.3s ease;
+  color: var(--text);
+  transition: all 0.2s ease;
 }
 
-.product-card__add:hover {
+.product-card__qty-controls button:hover {
   background-color: var(--primary);
-  color: #FFFFFF;
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  color: white;
 }
 
-.product-card__add:hover i {
-  transform: rotate(90deg);
+.product-card__qty-controls span {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1.1rem;
+  flex: 1;
+  text-align: center;
 }
 
 [data-theme='dark'] .product-card__favorite {
