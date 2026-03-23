@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+// use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\ProductRequest;
 
 class ProductController extends Controller
 {
@@ -20,24 +21,11 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'quantity' => 'required|integer',
-            'description' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|string', // Consider image upload later
-        ]);
+        $product = Product::create($request->validated());
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $product = Product::create($request->all());
-
-        return response()->json($product, 21);
+        return response()->json($product, 201);
     }
 
     /**
@@ -51,9 +39,9 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
-        $product->update($request->all());
+        $product->update($request->validated());
 
         return response()->json($product);
     }
@@ -65,6 +53,6 @@ class ProductController extends Controller
     {
         $product->delete();
 
-        return response()->json(null, 24);
+        return response()->json(null, 204);
     }
 }

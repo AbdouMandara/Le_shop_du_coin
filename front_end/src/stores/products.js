@@ -38,6 +38,24 @@ export const useProductStore = defineStore('products', {
             const prefix = this._getPrefix();
             const response = await api.get(`${prefix}/products/${id}`);
             this.currentProduct = response.data;
+        },
+        async addProduct(productData) {
+            const prefix = this._getPrefix();
+            const response = await api.post(`${prefix}/products`, productData);
+            this.products.push(response.data);
+        },
+        async updateProduct(id, productData) {
+            const prefix = this._getPrefix();
+            const response = await api.put(`${prefix}/products/${id}`, productData);
+            const index = this.products.findIndex(p => p.id === id);
+            if (index !== -1) {
+                this.products[index] = response.data;
+            }
+        },
+        async deleteProduct(id) {
+            const prefix = this._getPrefix();
+            await api.delete(`${prefix}/products/${id}`);
+            this.products = this.products.filter(p => p.id !== id);
         }
     }
-});
+})

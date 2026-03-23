@@ -27,7 +27,7 @@ class FavoriteController extends Controller
 
     public function destroy(Favorite $favorite)
     {
-        if ($favorite->user_id !== auth()->id()) {
+        if ($favorite->user_id !== auth()->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

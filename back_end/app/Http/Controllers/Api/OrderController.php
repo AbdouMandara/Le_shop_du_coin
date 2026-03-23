@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use App\HTTP\Requests\OrderRequest;
+use App\Http\Resources\OrderResource;
 
 class OrderController extends Controller
 {
@@ -21,17 +23,16 @@ class OrderController extends Controller
         return $request->user()->orders()->with('product')->latest()->get();
     }
 
-    public function store(Request $request)
+    public function store(OrderRequest $request)
     {
-        $request->validate(['product_id' => 'required|exists:products,id']);
+        $donnees_validees = $request->validated();
         
-        $order = Order::create([
-            'user_id' => $request->user()->id,
-            'product_id' => $request->product_id,
-            'status' => 'pending',
-        ]);
+        $order = Order::create($donnees_validees);
 
-        return response()->json($order, 201);
+        return response()->json([
+            'success' => true, 
+            'data' =>new OrderResource($order)
+            ], 201);
     }
 
     public function update(Request $request, Order $order)

@@ -16,7 +16,7 @@
               id="name" 
               v-model="form.name" 
               type="text" 
-              placeholder="Ex: John Doe" 
+              placeholder="Ex: Dina Moudingo" 
               maxlength="30"
               required
             />
@@ -31,7 +31,7 @@
               id="email" 
               v-model="form.email" 
               type="email" 
-              placeholder="votre@email.com" 
+              placeholder="dina@email.com" 
               required
             />
           </div>
@@ -68,8 +68,11 @@
         <div v-if="error" class="error-message">
           {{ error }}
         </div>
+        <div v-if="password_different == true && form.password_confirmation.length >= 1" class="error-message">
+          <p>Les mots de passe doivent etre identiques !</p>
+        </div>
 
-        <button type="submit" class="btn-register" :disabled="loading">
+        <button type="submit" class="btn-register" :disabled="loading && password_different">
           <span v-if="!loading">S'inscrire</span>
           <i v-else class='bx bx-loader-alt bx-spin'></i>
         </button>
@@ -86,7 +89,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/services/api';
 import { useAuthStore } from '@/stores/auth';
@@ -102,7 +105,13 @@ const form = reactive({
     password: '',
     password_confirmation: '',
 });
-
+// Verif au niveau de la confirmation du mot de passe
+let password_different = computed(()=>{
+  if (form.password != form.password_confirmation){
+    return true
+  }else{
+    return false
+}})
 const handleRegister = async () => {
     loading.value = true;
     error.value = null;

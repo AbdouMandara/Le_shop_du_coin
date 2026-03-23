@@ -1,5 +1,5 @@
 <template>
-  <div class="products-page">
+  <div v-if="authStore.isUser" class="products-page">
     <div class="products-main">
         <header class="products-header">
             <div class="header-title-bar">
@@ -83,14 +83,187 @@
         </div>
     </div>
   </div>
+
+
+  <!-- Coté admin  -->
+   <div v-if="authStore.isAdmin">
+
+       <div v-if="tab === 'products'" class="admin-content">
+           <div class="content-header">
+            <h3>Gestion des Produits</h3>
+            <button class="btn-add" @click="openProductModal()">Ajouter un produit</button>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="p in productStore.products" :key="p.id">
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.price }} FCFA</td>
+                    <td>{{ p.quantity }}</td>
+                    <td class="actions">
+                        <button class="btn-icon" @click="openProductModal(p)"><i class='bx bx-edit'></i></button>
+                        <button class="btn-icon delete" @click="deleteProduct(p.id)"><i class='bx bx-trash'></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal pour ajouter/modifier produit -->
+    <div v-if="showProductModal" class="modal-overlay" @click="closeProductModal">
+        <div class="modal-content" @click.stop>
+            <div class="modal-header">
+                <h3>{{ editingProduct ? 'Modifier le produit' : 'Ajouter un produit' }}</h3>
+                <button class="close-btn" @click="closeProductModal">&times;</button>
+            </div>
+            <form @submit.prevent="saveProduct" class="product-form">
+                <div class="form-group">
+                    <label for="name">Nom du produit</label>
+                    <input type="text" id="name" v-model="productForm.name" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Prix (FCFA)</label>
+                    <input type="number" id="price" v-model="productForm.price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantité en stock</label>
+                    <input type="number" id="quantity" v-model="productForm.quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Catégorie</label>
+                    <select id="category" v-model="productForm.category_id" required>
+                        <option value="">Sélectionner une catégorie</option>
+                        <option v-for="cat in productStore.categories" :key="cat.id" :value="cat.id">{{ cat.label }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" v-model="productForm.description"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" @click="closeProductModal">Annuler</button>
+                    <button type="submit" class="btn-save">{{ editingProduct ? 'Modifier' : 'Ajouter' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div v-if="tab === 'orders'" class="admin-content">
+        <h3>Toutes les Commandes</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Produit</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="o in orderStore.orders" :key="o.id">
+                    <td>{{ o.user?.name }}</td>
+                    <td>{{ o.product?.name }}</td>
+                    <td><span class="status-badge" :class="o.status">{{ o.status }}</span></td>
+                    <td>
+                        <select v-model="o.status" @change="orderStore.updateOrderStatus(o.id, o.status)">
+                            <option value="pending">En attente</option>
+                            <option value="paid">Payé</option>
+                            <option value="delivered">Livré</option>
+                            <option value="cancelled">Annulé</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+                </div>
+
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useProductStore } from '@/stores/products';
+import { useOrderStore } from '@/stores/orders';
 import ProductCard from '@/components/ProductCard.vue';
+import {useAuthStore}  from '@/stores/auth'
+// coté admin
 
 const productStore = useProductStore();
+const authStore = useAuthStore()
+const orderStore = useOrderStore();
+const tab = ref('products');
+
+const showProductModal = ref(false);
+const editingProduct = ref(null);
+const productForm = ref({
+    name: '',
+    price: '',
+    quantity: '',
+    category_id: '',
+    description: ''
+});
+
+const openProductModal = (product = null) => {
+    editingProduct.value = product;
+    if (product) {
+        productForm.value = { ...product };
+    } else {
+        productForm.value = {
+            name: '',
+            price: '',
+            quantity: '',
+            category_id: '',
+            description: ''
+        };
+    }
+    showProductModal.value = true;
+};
+
+const closeProductModal = () => {
+    showProductModal.value = false;
+    editingProduct.value = null;
+};
+
+const saveProduct = async () => {
+    try {
+        if (editingProduct.value) {
+            await productStore.updateProduct(editingProduct.value.id, productForm.value);
+        } else {
+            await productStore.addProduct(productForm.value);
+        }
+        closeProductModal();
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde du produit:', error);
+        // Afficher un message d'erreur si nécessaire
+    }
+};
+
+const deleteProduct = async (id) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+        try {
+            await productStore.deleteProduct(id);
+        } catch (error) {
+            console.error('Erreur lors de la suppression du produit:', error);
+        }
+    }
+};
+
+onMounted(() => {
+    productStore.fetchProducts();
+    productStore.fetchCategories();
+    orderStore.fetchOrders();
+});
+
+
+
+// Coté client
 const selectedCategory = ref(null);
 const searchQuery = ref('');
 
@@ -386,4 +559,212 @@ onUnmounted(() => {
 [data-theme='dark'] .cat-chip {
     color: #DDD;
 }
+/* Coté admin */
+
+.admin-page {
+    padding: 2rem;
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.admin-tabs button {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #888;
+    border-bottom: 3px solid transparent;
+}
+
+.admin-tabs button.active {
+    color: var(--primary);
+    border-bottom-color: var(--secondary);
+}
+
+.admin-content {
+    margin-top: 2.5rem;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-add {
+    background-color: var(--secondary);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.admin-table th, .admin-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: var(--neutral);
+    font-weight: 700;
+}
+
+.admin-table tr:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--primary);
+}
+
+.btn-icon.delete {
+    color: #ff4d4d;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.pending { background: #FFF3E0; color: #E65100; }
+.status-badge.paid { background: #E8F5E9; color: #2E7D32; }
+
+select {
+    padding: 0.4rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: var(--background);
+    color: var(--text);
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.btn-cancel {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-save {
+    background-color: var(--secondary);
+    color: #FFF;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
 </style>

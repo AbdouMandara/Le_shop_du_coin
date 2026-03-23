@@ -4,25 +4,20 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
-use Illuminate\Http\Request;
+use App\HTTP\Requests\ReviewRequest;
+use App\Http\Resources\ReviewResource;
 
 class ReviewController extends Controller
 {
-    public function store(Request $request)
+    public function store(ReviewRequest $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string',
-        ]);
+        $valided_data = $request->validate();
 
-        $review = Review::create([
-            'user_id' => $request->user()->id,
-            'product_id' => $request->product_id,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-        ]);
+        $review = Review::create($valided_data);
 
-        return response()->json($review, 21);
+        return response()->json([
+            'success' => true,
+            'data' => new ReviewResource($review),
+        ]);
     }
 }

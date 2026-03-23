@@ -162,7 +162,6 @@ onMounted(() => {
 }
 
 .btn-cta:hover {
-  transform: translateY(-3px);
   box-shadow: 0 12px 32px rgba(0,0,0,0.2);
 }
 
@@ -188,11 +187,7 @@ onMounted(() => {
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-  border-color: var(--primary);
-}
+
 
 .feature-icon {
   width: 70px;
@@ -208,10 +203,6 @@ onMounted(() => {
   transition: background-color 0.3s, color 0.3s;
 }
 
-.feature-card:hover .feature-icon {
-  background-color: var(--primary);
-  color: #FFFFFF;
-}
 
 .feature-text h3 {
   margin: 0 0 0.5rem;

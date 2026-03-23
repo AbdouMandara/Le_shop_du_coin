@@ -56,6 +56,11 @@ const router = createRouter({
                 component: () => import('../views/CartView.vue')
             },
             {
+                path: 'orders',
+                name: 'client-orders',
+                component: () => import('../views/OrdersView.vue')
+            },
+            {
                 path: 'profile',
                 name: 'client-profile',
                 component: () => import('../views/ProfileView.vue')
@@ -78,6 +83,11 @@ const router = createRouter({
               component: () => import('../views/ProductsView.vue')
             },
             {
+              path: 'orders',
+              name: 'admin-orders',
+              component: () => import('../views/OrdersView.vue')
+            },
+            {
               path: 'profile',
               name: 'admin-profile',
               component: () => import('../views/ProfileView.vue')
@@ -93,6 +103,11 @@ const router = createRouter({
               path: '',
               name: 'livreur',
               component: () => import('../views/LivreurView.vue')
+            },
+            {
+              path: 'orders',
+              name: 'livreur-orders',
+              component: () => import('../views/OrdersView.vue')
             },
             {
               path: 'profile',
