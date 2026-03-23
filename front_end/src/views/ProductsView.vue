@@ -86,9 +86,9 @@
 
 
   <!-- Coté admin  -->
-   <div v-if="authStore.isAdmin">
+  
 
-       <div v-if="tab === 'products'" class="admin-content">
+       <div v-if="authStore.isAdmin" class="admin-content">
            <div class="content-header">
             <h3>Gestion des Produits</h3>
             <button class="btn-add" @click="openProductModal()">Ajouter un produit</button>
@@ -183,7 +183,6 @@
             </tbody>
         </table>
     </div>
-                </div>
 
 </template>
 
@@ -587,7 +586,7 @@ onUnmounted(() => {
 }
 
 .admin-content {
-    margin-top: 2.5rem;
+    padding: 1.5em;
 }
 
 .content-header {
