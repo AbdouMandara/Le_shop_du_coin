@@ -104,15 +104,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="p in productStore.products" :key="p.id">
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.price }} FCFA</td>
-                    <td>{{ p.quantity }}</td>
-                    <td class="actions">
-                        <button class="btn-icon" @click="openProductModal(p)"><i class='bx bx-edit'></i></button>
-                        <button class="btn-icon delete" @click="deleteProduct(p.id)"><i class='bx bx-trash'></i></button>
-                    </td>
-                </tr>
+                <template v-for="p in productStore.products" :key="p?.id">
+                    <tr v-if="p">
+                        <td>{{ p.name }}</td>
+                        <td>{{ p.price }} FCFA</td>
+                        <td>{{ p.quantity }}</td>
+                        <td class="actions">
+                            <button class="btn-icon" @click="openProductModal(p)"><i class='bx bx-edit'></i></button>
+                            <button class="btn-icon delete" @click="deleteProduct(p.id)"><i class='bx bx-trash'></i></button>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>
@@ -149,8 +151,10 @@
                     <textarea v-model="productForm.description" placeholder="Description du produit..."></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-secondary" @click="closeProductModal">Annuler</button>
-                    <button type="submit" class="btn-primary">{{ editingProduct ? 'Modifier' : 'Ajouter' }}</button>
+                    <button type="button" class="btn-secondary" @click="closeProductModal" :disabled="submitting">Annuler</button>
+                    <button type="submit" class="btn-primary" :disabled="submitting">
+                        {{ submitting ? 'Enregistrement...' : (editingProduct ? 'Modifier' : 'Ajouter') }}
+                    </button>
                 </div>
             </form>
         </div>
@@ -217,6 +221,7 @@ onUnmounted(() => {
     document.body.style.overflow = '';
 });
 const editingProduct = ref(null);
+const submitting = ref(false);
 const productForm = ref({
     name: '',
     price: '',
@@ -255,6 +260,8 @@ const closeProductModal = () => {
 };
 
 const saveProduct = async () => {
+    if (submitting.value) return;
+    
     // Préparer les données pour envoyer uniquement ce que le backend attend
     const dataToSend = {
         name: productForm.value.name,
@@ -265,6 +272,7 @@ const saveProduct = async () => {
         image: productForm.value.image || null
     };
 
+    submitting.value = true;
     try {
         if (editingProduct.value) {
             await productStore.updateProduct(editingProduct.value.id, dataToSend);
@@ -281,6 +289,8 @@ const saveProduct = async () => {
         } else {
             notificationStore.error('Erreur lors de la sauvegarde: ' + (error.response?.data?.message || error.message));
         }
+    } finally {
+        submitting.value = false;
     }
 };
 

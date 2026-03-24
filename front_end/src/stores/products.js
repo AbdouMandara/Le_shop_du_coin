@@ -42,14 +42,15 @@ export const useProductStore = defineStore('products', {
         async addProduct(productData) {
             const prefix = this._getPrefix();
             const response = await api.post(`${prefix}/products`, productData);
-            this.products.unshift(response.data.data); // Utiliser .data.data et unshift pour mettre en haut
+            const newProduct = response.data.data || response.data;
+            this.products.unshift(newProduct);
         },
         async updateProduct(id, productData) {
             const prefix = this._getPrefix();
             const response = await api.put(`${prefix}/products/${id}`, productData);
-            const index = this.products.findIndex(p => p.id === id);
+            const index = this.products.findIndex(p => p && p.id === id);
             if (index !== -1) {
-                this.products[index] = response.data.data;
+                this.products[index] = response.data.data || response.data;
             }
         },
         async deleteProduct(id) {
