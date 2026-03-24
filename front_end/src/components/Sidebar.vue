@@ -3,6 +3,16 @@
     class="sidebar" 
     :class="{ 'sidebar--collapsed': collapsed }"
   >
+    <header class="sidebar__header">
+      <!-- <div v-if="!collapsed" class="sidebar__logo">
+        <i class='bx bx-store-alt'></i>
+        <span>Shop</span>
+      </div> -->
+      <button class="sidebar__toggle" @click="toggleSidebar">
+        <i :class="collapsed ? 'bx bx-menu' : 'bx bx-chevron-left'"></i>
+      </button>
+      
+    </header>
 
     <nav class="sidebar__nav">
       <router-link 
@@ -60,6 +70,10 @@ const collapsed = ref(false);
 
 const showUserMenu = ref(false);
 const userMenuRef = ref(null);
+
+const toggleSidebar = () => {
+    collapsed.value = !collapsed.value;
+};
 
 const toggleUserMenu = () => {
     showUserMenu.value = !showUserMenu.value;
@@ -166,17 +180,32 @@ const handleLogout = async () => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar__link {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1.75rem;
+  gap: 1.25rem;
+  padding: 0.85rem 1.75rem;
   color: var(--text);
   opacity: 0.7;
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.sidebar--collapsed .sidebar__link {
+  padding: 0.85rem 0;
+  justify-content: center;
+  gap: 0;
+}
+
+.sidebar--collapsed .sidebar__header {
+  justify-content: center;
+  padding: 0;
 }
 
 .sidebar__link:hover,
@@ -207,6 +236,16 @@ const handleLogout = async () => {
   flex-direction: column;
   gap: 1rem;
   border-top: 1px solid var(--border);
+}
+
+.sidebar--collapsed .sidebar__footer {
+  padding: 1.5rem 0;
+  align-items: center;
+}
+
+.sidebar--collapsed .user-profile {
+  padding: 0;
+  justify-content: center;
 }
 
 .sidebar__user {
