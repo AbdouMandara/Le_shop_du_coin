@@ -20,7 +20,7 @@ export const useOrderStore = defineStore('orders', {
             try {
                 const prefix = this.getPrefix();
                 const response = await api.get(`${prefix}/orders`);
-                this.orders = response.data;
+                this.orders = response.data.data; // Je mets response.data.data car coté laravel j'ai utilisé les collection dans les resources
             } finally {
                 this.loading = false;
             }
