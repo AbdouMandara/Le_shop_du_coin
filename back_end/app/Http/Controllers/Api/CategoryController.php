@@ -50,6 +50,6 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
-        return response()->json(null, 24);
+        return response()->json(null, 204);
     }
 }

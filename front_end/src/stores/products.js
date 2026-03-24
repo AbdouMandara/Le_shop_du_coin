@@ -32,7 +32,7 @@ export const useProductStore = defineStore('products', {
         async fetchCategories() {
             const prefix = this._getPrefix();
             const response = await api.get(`${prefix}/categories`);
-            this.categories = response.data;
+            this.categories = response.data.data;
         },
         async fetchProduct(id) {
             const prefix = this._getPrefix();
@@ -42,14 +42,14 @@ export const useProductStore = defineStore('products', {
         async addProduct(productData) {
             const prefix = this._getPrefix();
             const response = await api.post(`${prefix}/products`, productData);
-            this.products.push(response.data);
+            this.products.unshift(response.data.data); // Utiliser .data.data et unshift pour mettre en haut
         },
         async updateProduct(id, productData) {
             const prefix = this._getPrefix();
             const response = await api.put(`${prefix}/products/${id}`, productData);
             const index = this.products.findIndex(p => p.id === id);
             if (index !== -1) {
-                this.products[index] = response.data;
+                this.products[index] = response.data.data;
             }
         },
         async deleteProduct(id) {

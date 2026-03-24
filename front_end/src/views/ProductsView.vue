@@ -226,14 +226,22 @@ const productForm = ref({
 const openProductModal = (product = null) => {
     editingProduct.value = product;
     if (product) {
-        productForm.value = { ...product };
+        productForm.value = {
+            name: product.name,
+            price: product.price,
+            quantity: product.quantity,
+            category_id: product.category_id,
+            description: product.description,
+            image: product.image
+        };
     } else {
         productForm.value = {
             name: '',
             price: '',
             quantity: '',
             category_id: '',
-            description: ''
+            description: '',
+            image: null
         };
     }
     showProductModal.value = true;
@@ -245,16 +253,31 @@ const closeProductModal = () => {
 };
 
 const saveProduct = async () => {
+    // Préparer les données pour envoyer uniquement ce que le backend attend
+    const dataToSend = {
+        name: productForm.value.name,
+        price: parseFloat(productForm.value.price),
+        quantity: parseInt(productForm.value.quantity),
+        category_id: productForm.value.category_id,
+        description: productForm.value.description,
+        image: productForm.value.image || null
+    };
+
     try {
         if (editingProduct.value) {
-            await productStore.updateProduct(editingProduct.value.id, productForm.value);
+            await productStore.updateProduct(editingProduct.value.id, dataToSend);
         } else {
-            await productStore.addProduct(productForm.value);
+            await productStore.addProduct(dataToSend);
         }
         closeProductModal();
     } catch (error) {
         console.error('Erreur lors de la sauvegarde du produit:', error);
-        // Afficher un message d'erreur si nécessaire
+        if (error.response && error.response.data && error.response.data.errors) {
+            console.table(error.response.data.errors);
+            alert('Erreur de validation: ' + JSON.stringify(error.response.data.errors));
+        } else {
+            alert('Erreur lors de la sauvegarde: ' + (error.response?.data?.message || error.message));
+        }
     }
 };
 
@@ -272,6 +295,7 @@ onMounted(() => {
     productStore.fetchProducts();
     productStore.fetchCategories();
     orderStore.fetchOrders();
+    document.addEventListener('click', closeFilterMenu);
 });
 
 
@@ -331,11 +355,7 @@ const filteredProducts = computed(() => {
     return result;
 });
 
-onMounted(() => {
-    document.addEventListener('click', closeFilterMenu);
-    productStore.fetchProducts();
-    productStore.fetchCategories();
-});
+// Les fetchs sont maintenant centralisés dans le premier onMounted
 
 onUnmounted(() => {
     document.removeEventListener('click', closeFilterMenu);
