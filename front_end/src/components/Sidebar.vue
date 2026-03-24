@@ -100,6 +100,7 @@ const navItems = computed(() => {
         } else if (authStore.isAdmin) {
             items.push({ label: 'Tableau de bord', path: '/admin', icon: 'bx bx-shield-quarter' });
             items.push({ label: 'Produits', path: '/admin/products', icon: 'bx bx-grid-alt' });
+            items.push({ label: 'Livreurs', path: '/admin/livreurs', icon: 'bx bx-cycling' });
             items.push({ label: 'Commandes', path: '/admin/orders', icon: 'bx bx-package' });
             items.push({ label: 'Profil', path: '/admin/profile', icon: 'bx bx-user' });
         } else if (authStore.isLivreur) {

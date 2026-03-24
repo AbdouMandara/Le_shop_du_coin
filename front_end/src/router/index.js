@@ -40,6 +40,7 @@ const router = createRouter({
         // Admin specific routes
         { path: 'admin', name: 'admin', component: () => import('../views/AdminView.vue'), meta: { auth: true, role: 'admin' } },
         { path: 'admin/products', name: 'admin-products', component: () => import('../views/ProductsView.vue'), meta: { auth: true, role: 'admin' } },
+        { path: 'admin/livreurs', name: 'admin-livreurs', component: () => import('../views/AdminLivreursView.vue'), meta: { auth: true, role: 'admin' } },
         { path: 'admin/orders', name: 'admin-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'admin' } },
         { path: 'admin/profile', name: 'admin-profile', component: () => import('../views/ProfileView.vue'), meta: { auth: true, role: 'admin' } },
         // Livreur specific routes
