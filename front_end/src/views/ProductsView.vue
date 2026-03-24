@@ -1,95 +1,96 @@
 <template>
-  <div v-if="authStore.isUser" class="products-page">
-    <div class="products-main">
-        <header class="products-header">
-            <div class="header-title-bar">
-                <h1>Nos Produits</h1>
-                <div class="search-bar">
-                    <i class='bx bx-search'></i>
-                    <input type="text" v-model="searchQuery" placeholder="Rechercher un produit..." />
-                </div>
-            </div>
-            
-            <div class="products-controls-row">
-                <div class="categories-inline">
-                    <button 
-                        class="cat-chip" 
-                        :class="{ active: !selectedCategory }" 
-                        @click="selectedCategory = null"
-                    >
-                        Tous les produits
-                    </button>
-                    <button 
-                        v-for="cat in topCategories" 
-                        :key="cat.id"
-                        class="cat-chip"
-                        :class="{ active: selectedCategory === cat.id }"
-                        @click="selectedCategory = cat.id"
-                    >
-                        {{ cat.label }}
-                    </button>
-                </div>
+  <div class="products-view-container">
+    <div v-if="authStore.isUser" class="products-page">
+      <div class="products-main">
+          <header class="products-header">
+              <div class="header-title-bar">
+                  <h1>Nos Produits</h1>
+                  <div class="search-bar">
+                      <i class='bx bx-search'></i>
+                      <input type="text" v-model="searchQuery" placeholder="Rechercher un produit..." />
+                  </div>
+              </div>
+              
+              <div class="products-controls-row">
+                  <div class="categories-inline">
+                      <button 
+                          class="cat-chip" 
+                          :class="{ active: !selectedCategory }" 
+                          @click="selectedCategory = null"
+                      >
+                          Tous les produits
+                      </button>
+                      <button 
+                          v-for="cat in topCategories" 
+                          :key="cat.id"
+                          class="cat-chip" 
+                          :class="{ active: selectedCategory === cat.id }"
+                          @click="selectedCategory = cat.id"
+                      >
+                          {{ cat.label }}
+                      </button>
+                  </div>
 
-                <div class="filter-actions">
-                    <div class="filter-dropdown-wrapper" ref="filterMenuRef">
-                        <button class="action-btn" @click.stop="showFilterModal = !showFilterModal">
-                            <i class='bx bx-filter-alt'></i> Filtres
-                        </button>
-                        
-                        <!-- Dropdown Filtres -->
-                        <div v-if="showFilterModal" class="filter-dropdown" @click.stop>
-                            <div class="filter-dropdown-header">
-                                <h3>Filtres détaillés</h3>
-                            </div>
-                            
-                            <div class="filter-dropdown-body">
-                                <div class="filter-group">
-                                    <label>Critère de tri</label>
-                                    <select v-model="sortBy" class="filter-input">
-                                        <option value="date">Date d'ajout</option>
-                                        <option value="price">Prix</option>
-                                        <option value="name">Alphabétique</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="sort-order-box">
-                        <span class="sort-label">Classé par :</span>
-                        <select v-model="sortOrder" class="sort-select">
-                            <option value="desc">Décroissant</option>
-                            <option value="asc">Croissant</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </header>
+                  <div class="filter-actions">
+                      <div class="filter-dropdown-wrapper" ref="filterMenuRef">
+                          <button class="action-btn" @click.stop="showFilterModal = !showFilterModal">
+                              <i class='bx bx-filter-alt'></i> Filtres
+                          </button>
+                          
+                          <!-- Dropdown Filtres -->
+                          <div v-if="showFilterModal" class="filter-dropdown" @click.stop>
+                              <div class="filter-dropdown-header">
+                                  <h3>Filtres détaillés</h3>
+                              </div>
+                              
+                              <div class="filter-dropdown-body">
+                                  <div class="filter-group">
+                                      <label>Critère de tri</label>
+                                      <select v-model="sortBy" class="filter-input">
+                                          <option value="date">Date d'ajout</option>
+                                          <option value="price">Prix</option>
+                                          <option value="name">Alphabétique</option>
+                                      </select>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <div class="sort-order-box">
+                          <span class="sort-label">Classé par :</span>
+                          <select v-model="sortOrder" class="sort-select">
+                              <option value="desc">Décroissant</option>
+                              <option value="asc">Croissant</option>
+                          </select>
+                      </div>
+                  </div>
+              </div>
+          </header>
 
-        <div v-if="productStore.loading" class="loading">
-            <i class='bx bx-loader-alt bx-spin'></i> Chargement...
-        </div>
+          <div v-if="productStore.loading" class="loading">
+              <i class='bx bx-loader-alt bx-spin'></i> Chargement...
+          </div>
 
-        <div v-else class="product-grid">
-            <ProductCard 
-                v-for="product in filteredProducts" 
-                :key="product.id" 
-                :product="product"
-            />
-        </div>
+          <div v-else class="product-grid">
+              <ProductCard 
+                  v-for="product in filteredProducts" 
+                  :key="product.id" 
+                  :product="product"
+              />
+          </div>
 
-        <div v-if="!productStore.loading && filteredProducts.length === 0" class="empty">
-            Aucun produit trouvé.
-        </div>
+          <div v-if="!productStore.loading && filteredProducts.length === 0" class="empty">
+              Aucun produit trouvé.
+          </div>
+      </div>
     </div>
-  </div>
 
 
-  <!-- Coté admin  -->
-  
+    <!-- Coté admin  -->
+    
 
-       <div v-if="authStore.isAdmin" class="admin-content">
-           <div class="content-header">
+    <div v-if="authStore.isAdmin" class="admin-content">
+        <div class="content-header">
             <h3>Gestion des Produits</h3>
             <button class="btn-add" @click="openProductModal()">Ajouter un produit</button>
         </div>
@@ -183,7 +184,7 @@
             </tbody>
         </table>
     </div>
-
+  </div>
 </template>
 
 <script setup>

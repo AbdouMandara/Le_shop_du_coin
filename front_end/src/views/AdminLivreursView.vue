@@ -98,7 +98,7 @@ const newLivreur = ref({
 });
 
 const fetchLivreurs = async () => {
-    loading.ref = true;
+    loading.value = true;
     try {
         const response = await api.get('/admin/users?role=livreur');
         livreurs.value = response.data.data;
