@@ -118,39 +118,39 @@
     </div>
 
     <!-- Modal pour ajouter/modifier produit -->
-    <div v-if="showProductModal" class="modal-overlay" @click="closeProductModal">
-        <div class="modal-content" @click.stop>
+    <div v-if="showProductModal" class="modal-overlay" @click.self="closeProductModal">
+        <div class="modal">
             <div class="modal-header">
-                <h3>{{ editingProduct ? 'Modifier le produit' : 'Ajouter un produit' }}</h3>
-                <button class="close-btn" @click="closeProductModal">&times;</button>
+                <h2>{{ editingProduct ? 'Modifier le produit' : 'Ajouter un produit' }}</h2>
+                <button class="btn-close" @click="closeProductModal">&times;</button>
             </div>
-            <form @submit.prevent="saveProduct" class="product-form">
+            <form @submit.prevent="saveProduct" class="modal-body">
                 <div class="form-group">
-                    <label for="name">Nom du produit</label>
-                    <input type="text" id="name" v-model="productForm.name" required>
+                    <label>Nom du produit</label>
+                    <input type="text" v-model="productForm.name" placeholder="ex: Smartphone Pro" required>
                 </div>
                 <div class="form-group">
-                    <label for="price">Prix (FCFA)</label>
-                    <input type="number" id="price" v-model="productForm.price" step="0.01" required>
+                    <label>Prix (FCFA)</label>
+                    <input type="number" v-model="productForm.price" step="0.01" placeholder="ex: 150000" required>
                 </div>
                 <div class="form-group">
-                    <label for="quantity">Quantité en stock</label>
-                    <input type="number" id="quantity" v-model="productForm.quantity" required>
+                    <label>Quantité en stock</label>
+                    <input type="number" v-model="productForm.quantity" placeholder="ex: 50" required>
                 </div>
                 <div class="form-group">
-                    <label for="category">Catégorie</label>
-                    <select id="category" v-model="productForm.category_id" required>
+                    <label>Catégorie</label>
+                    <select v-model="productForm.category_id" required>
                         <option value="">Sélectionner une catégorie</option>
                         <option v-for="cat in productStore.categories" :key="cat.id" :value="cat.id">{{ cat.label }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" v-model="productForm.description"></textarea>
+                    <label>Description</label>
+                    <textarea v-model="productForm.description" placeholder="Description du produit..."></textarea>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" @click="closeProductModal">Annuler</button>
-                    <button type="submit" class="btn-save">{{ editingProduct ? 'Modifier' : 'Ajouter' }}</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" @click="closeProductModal">Annuler</button>
+                    <button type="submit" class="btn-primary">{{ editingProduct ? 'Modifier' : 'Ajouter' }}</button>
                 </div>
             </form>
         </div>
@@ -188,7 +188,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useProductStore } from '@/stores/products';
 import { useOrderStore } from '@/stores/orders';
 import ProductCard from '@/components/ProductCard.vue';
@@ -201,6 +201,19 @@ const orderStore = useOrderStore();
 const tab = ref('products');
 
 const showProductModal = ref(false);
+
+// Empêcher le scroll du body quand le modal est ouvert
+watch(showProductModal, (val) => {
+    if (val) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+});
+
+onUnmounted(() => {
+    document.body.style.overflow = '';
+});
 const editingProduct = ref(null);
 const productForm = ref({
     name: '',
@@ -665,42 +678,43 @@ select {
     color: var(--text);
 }
 
-/* Modal styles */
+/* Modal styles aligné avec AdminLivreurs */
 .modal-overlay {
     position: fixed;
-    top: 0;
+    top: 55px;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Aligne en haut */
+    padding-top: 5vh; /* Espace du haut */
     z-index: 1000;
 }
 
-.modal-content {
-    background-color: var(--surface);
-    border-radius: 12px;
-    padding: 2rem;
+.modal {
+    background: var(--surface);
+    width: 100%;
     max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-height: 90vh; /* Empêche le modal de dépasser l'écran */
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
 }
 
-.modal-header h3 {
-    margin: 0;
-}
+.modal-header h2 { margin: 0; font-size: 1.3rem; }
 
-.close-btn {
+.btn-close {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -708,10 +722,13 @@ select {
     color: var(--text);
 }
 
-.product-form {
+.modal-body {
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
+    overflow-y: auto; /* Permet le scroll interne */
+    flex: 1;
 }
 
 .form-group {
@@ -722,6 +739,7 @@ select {
 
 .form-group label {
     font-weight: 600;
+    font-size: 0.9rem;
     color: var(--text);
 }
 
@@ -741,30 +759,33 @@ select {
     min-height: 100px;
 }
 
-.form-actions {
+.modal-footer {
     display: flex;
-    gap: 1rem;
     justify-content: flex-end;
+    gap: 1rem;
     margin-top: 1rem;
 }
 
-.btn-cancel {
-    background-color: #f5f5f5;
-    color: #333;
-    border: 1px solid var(--border);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.btn-save {
-    background-color: var(--secondary);
-    color: #FFF;
+.btn-primary {
+    background: var(--primary);
+    color: white;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
-    cursor: pointer;
     font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-secondary {
+    background: var(--neutral);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 </style>

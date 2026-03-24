@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import api from '@/services/api';
 
 const livreurs = ref([]);
@@ -90,6 +90,19 @@ const roles = ref([]);
 const loading = ref(true);
 const submitting = ref(false);
 const showAddModal = ref(false);
+
+// Empêcher le scroll du body quand le modal est ouvert
+watch(showAddModal, (val) => {
+    if (val) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+});
+
+onUnmounted(() => {
+    document.body.style.overflow = '';
+});
 
 const newLivreur = ref({
     name: '',
@@ -263,14 +276,15 @@ onMounted(async () => {
 /* Modal */
 .modal-overlay {
     position: fixed;
-    top: 0;
+    top: 55px;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Aligne en haut */
     justify-content: center;
+    padding-top: 5vh; /* Espace du haut */
     z-index: 1000;
 }
 
@@ -278,8 +292,11 @@ onMounted(async () => {
     background: var(--surface);
     width: 100%;
     max-width: 500px;
+    max-height: 90vh; /* Empêche le modal de dépasser l'écran */
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
@@ -305,6 +322,8 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    overflow-y: auto; /* Permet le scroll interne */
+    flex: 1;
 }
 
 .form-group {
