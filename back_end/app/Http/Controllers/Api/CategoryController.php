@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Http\Requests\CategoryRequest;
+use App\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller
 {
@@ -13,17 +15,16 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return Category::all();
+        return CategoryResource::collection(Category::all());
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CategoryRequest $request)
     {
-        $request->validate(['label' => 'required|string|unique:categories']);
-        $category = Category::create($request->all());
-        return response()->json($category, 21);
+        $category = Category::create($request->validated());
+        return response()->json(new CategoryResource($category), 201);
     }
 
     /**
@@ -31,16 +32,16 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        return $category->load('products');
+        return new CategoryResource($category->load('products'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(CategoryRequest $request, Category $category)
     {
-        $category->update($request->all());
-        return response()->json($category);
+        $category->update($request->validated());
+        return response()->json(new CategoryResource($category));
     }
 
     /**

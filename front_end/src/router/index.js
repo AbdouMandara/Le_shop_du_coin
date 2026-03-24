@@ -31,91 +31,21 @@ const router = createRouter({
           component: () => import('../views/ProductsView.vue')
         },
         // Client specific routes
-        {
-          path: 'client',
-          meta: { auth: true, role: 'user' },
-          children: [
-            {
-                path: '',
-                name: 'client-home',
-                component: () => import('../views/HomeView.vue')
-            },
-            {
-                path: 'products',
-                name: 'client-products',
-                component: () => import('../views/ProductsView.vue')
-            },
-            {
-                path: 'favorites',
-                name: 'favorites',
-                component: () => import('../views/FavoritesView.vue')
-            },
-            {
-                path: 'cart',
-                name: 'cart',
-                component: () => import('../views/CartView.vue')
-            },
-            {
-                path: 'orders',
-                name: 'client-orders',
-                component: () => import('../views/OrdersView.vue')
-            },
-            {
-                path: 'profile',
-                name: 'client-profile',
-                component: () => import('../views/ProfileView.vue')
-            }
-          ]
-        },
+        { path: 'client', name: 'client-home', component: () => import('../views/HomeView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/products', name: 'client-products', component: () => import('../views/ProductsView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/favorites', name: 'favorites', component: () => import('../views/FavoritesView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/cart', name: 'cart', component: () => import('../views/CartView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/orders', name: 'client-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/profile', name: 'client-profile', component: () => import('../views/ProfileView.vue'), meta: { auth: true, role: 'user' } },
         // Admin specific routes
-        {
-          path: 'admin',
-          meta: { auth: true, role: 'admin' },
-          children: [
-            {
-              path: '',
-              name: 'admin',
-              component: () => import('../views/AdminView.vue')
-            },
-            {
-              path: 'products',
-              name: 'admin-products',
-              component: () => import('../views/ProductsView.vue')
-            },
-            {
-              path: 'orders',
-              name: 'admin-orders',
-              component: () => import('../views/OrdersView.vue')
-            },
-            {
-              path: 'profile',
-              name: 'admin-profile',
-              component: () => import('../views/ProfileView.vue')
-            }
-          ]
-        },
+        { path: 'admin', name: 'admin', component: () => import('../views/AdminView.vue'), meta: { auth: true, role: 'admin' } },
+        { path: 'admin/products', name: 'admin-products', component: () => import('../views/ProductsView.vue'), meta: { auth: true, role: 'admin' } },
+        { path: 'admin/orders', name: 'admin-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'admin' } },
+        { path: 'admin/profile', name: 'admin-profile', component: () => import('../views/ProfileView.vue'), meta: { auth: true, role: 'admin' } },
         // Livreur specific routes
-        {
-          path: 'livreur',
-          meta: { auth: true, role: 'livreur' },
-          children: [
-            {
-              path: '',
-              name: 'livreur',
-              component: () => import('../views/LivreurView.vue')
-            },
-            {
-              path: 'orders',
-              name: 'livreur-orders',
-              component: () => import('../views/OrdersView.vue')
-            },
-            {
-              path: 'profile',
-              name: 'livreur-profile',
-              component: () => import('../views/ProfileView.vue')
-            }
-          ]
-        }
+        { path: 'livreur', name: 'livreur', component: () => import('../views/LivreurView.vue'), meta: { auth: true, role: 'livreur' } },
+        { path: 'livreur/orders', name: 'livreur-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'livreur' } },
+        { path: 'livreur/profile', name: 'livreur-profile', component: () => import('../views/ProfileView.vue'), meta: { auth: true, role: 'livreur' } }
       ]
     }
   ],

@@ -15,9 +15,15 @@ class OrderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-             'user_id' => $request->user()->id,
-            'product_id' => $request->product_id,
-            'status' => 'pending',
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'product_id' => $this->product_id,
+            'status' => $this->status,
+            'delivery' => $this->delivery,
+            'payment_date' => $this->payment_date,
+            'user' => new UserResource($this->whenLoaded('user')),
+            'product' => new ProductResource($this->whenLoaded('product')),
+            'created_at' => $this->created_at,
         ];
     }
 }

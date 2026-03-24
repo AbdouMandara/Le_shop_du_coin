@@ -186,7 +186,7 @@ const handleLogout = async () => {
 }
 
 .sidebar__link:hover,
-.sidebar__link.router-link-active {
+.sidebar__link.router-link-exact-active {
   color: var(--primary);
   opacity: 1;
   background-color: var(--neutral);

@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
 
 class UserController extends Controller
 {
 
     public function index()
     {
-        return User::with('role')->latest()->paginate(10);
+        return UserResource::collection(User::with('role')->latest()->paginate(10));
     }
 }

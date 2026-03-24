@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 // use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\ProductRequest;
+use App\Http\Resources\ProductResource;
 
 class ProductController extends Controller
 {
@@ -15,7 +16,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return Product::with('category')->latest()->paginate(10);
+        return ProductResource::collection(Product::with('category')->latest()->paginate(10));
     }
 
     /**
@@ -25,7 +26,7 @@ class ProductController extends Controller
     {
         $product = Product::create($request->validated());
 
-        return response()->json($product, 201);
+        return response()->json(new ProductResource($product), 201);
     }
 
     /**
@@ -33,7 +34,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return $product->load('category', 'reviews.user');
+        return new ProductResource($product->load('category', 'reviews.user'));
     }
 
     /**
@@ -43,7 +44,7 @@ class ProductController extends Controller
     {
         $product->update($request->validated());
 
-        return response()->json($product);
+        return new ProductResource($product);
     }
 
     /**

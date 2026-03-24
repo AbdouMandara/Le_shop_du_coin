@@ -5,22 +5,24 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use App\HTTP\Requests\OrderRequest;
+use App\Http\Requests\OrderRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\UserResource;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
         if ($request->user()->role->label === 'admin') {
-            return Order::with(['user', 'product'])->latest()->paginate(10);
+            return OrderResource::collection(Order::with(['user', 'product'])->latest()->paginate(10));
         }
         
         if ($request->user()->role->label === 'livreur') {
-            return Order::whereIn('status', ['paid', 'delivered'])->with(['user', 'product'])->latest()->paginate(10);
+            return OrderResource::collection(Order::whereIn('status', ['paid', 'delivered'])->with(['user', 'product'])->latest()->paginate(10));
         }
 
-        return $request->user()->orders()->with('product')->latest()->get();
+        return OrderResource::collection($request->user()->orders()->with('product')->latest()->get());
     }
 
     public function store(OrderRequest $request)
@@ -35,7 +37,7 @@ class OrderController extends Controller
             ], 201);
     }
 
-    public function update(Request $request, Order $order)
+    public function update(OrderUpdateRequest $request, Order $order)
     {
         $user = $request->user();
         
@@ -44,9 +46,9 @@ class OrderController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $order->update($request->only('status', 'delivery', 'payment_date'));
+        $order->update($request->validated());
 
-        return response()->json($order);
+        return new OrderResource($order);
     }
 
     public function downloadInvoice(Order $order)
