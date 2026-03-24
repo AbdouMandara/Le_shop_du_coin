@@ -41,13 +41,33 @@ export const useProductStore = defineStore('products', {
         },
         async addProduct(productData) {
             const prefix = this._getPrefix();
-            const response = await api.post(`${prefix}/products`, productData);
+            const formData = new FormData();
+            Object.keys(productData).forEach(key => {
+                if (productData[key] !== null) {
+                    formData.append(key, productData[key]);
+                }
+            });
+
+            const response = await api.post(`${prefix}/products`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             const newProduct = response.data.data || response.data;
             this.products.unshift(newProduct);
         },
         async updateProduct(id, productData) {
             const prefix = this._getPrefix();
-            const response = await api.put(`${prefix}/products/${id}`, productData);
+            const formData = new FormData();
+            Object.keys(productData).forEach(key => {
+                if (productData[key] !== null) {
+                    formData.append(key, productData[key]);
+                }
+            });
+            // Workaround pour PUT avec multipart/form-data
+            formData.append('_method', 'PUT');
+
+            const response = await api.post(`${prefix}/products/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             const index = this.products.findIndex(p => p && p.id === id);
             if (index !== -1) {
                 this.products[index] = response.data.data || response.data;

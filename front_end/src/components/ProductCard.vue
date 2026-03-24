@@ -1,7 +1,7 @@
 <template>
   <div class="product-card">
     <div class="product-card__image">
-      <img :src="product.image || 'https://via.placeholder.com/300'" :alt="product.name" />
+      <img :src="getProductImage" :alt="product.name" />
       <button 
         class="product-card__favorite" 
         @click.stop="cartStore.toggleFavorite(product.id)"
@@ -68,6 +68,13 @@ const updateQty = (diff) => {
 const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR').format(price);
 };
+
+const getProductImage = computed(() => {
+    const path = props.product.image;
+    if (!path) return 'https://via.placeholder.com/300';
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+});
 </script>
 
 <style scoped>

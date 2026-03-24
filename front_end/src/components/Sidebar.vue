@@ -191,7 +191,6 @@ const handleLogout = async () => {
   color: var(--primary);
   opacity: 1;
   background-color: var(--neutral);
-  border-left-color: var(--primary);
 }
 
 .sidebar__link i {

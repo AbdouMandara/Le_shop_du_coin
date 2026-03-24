@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 // use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -24,7 +25,15 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        $product = Product::create($request->validated());
+        $validated = $request->validated();
+        
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images', 'public');
+            $validated['image'] = $path;
+        }
+
+        $product = Product::create($validated);
+        $product->load('category');
 
         return response()->json(new ProductResource($product), 201);
     }
@@ -42,7 +51,19 @@ class ProductController extends Controller
      */
     public function update(ProductRequest $request, Product $product)
     {
-        $product->update($request->validated());
+        $validated = $request->validated();
+
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $path = $request->file('image')->store('images', 'public');
+            $validated['image'] = $path;
+        }
+
+        $product->update($validated);
+        $product->load('category');
 
         return new ProductResource($product);
     }

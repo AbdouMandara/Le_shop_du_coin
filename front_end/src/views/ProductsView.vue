@@ -110,8 +110,22 @@
                         <td>{{ p.price }} FCFA</td>
                         <td>{{ p.quantity }}</td>
                         <td class="actions">
-                            <button class="btn-icon" @click="openProductModal(p)"><i class='bx bx-edit'></i></button>
-                            <button class="btn-icon delete" @click="deleteProduct(p.id)"><i class='bx bx-trash'></i></button>
+                            <div class="action-menu-container">
+                                <button class="btn-dots" @click.stop="toggleActionMenu(p.id)">
+                                    <i class='bx bx-dots-horizontal-rounded'></i>
+                                </button>
+                                <div v-if="activeMenu === p.id" class="action-dropdown">
+                                    <button @click="viewDetails(p)">
+                                        <i class='bx bx-show'></i> Voir les détails
+                                    </button>
+                                    <button @click="openProductModal(p)">
+                                        <i class='bx bx-edit'></i> Modifier
+                                    </button>
+                                    <button class="delete" @click="deleteProduct(p.id)">
+                                        <i class='bx bx-trash'></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 </template>
@@ -147,8 +161,21 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Image du produit <span>(Obligatoire)</span></label>
+                    <div class="image-upload-wrapper">
+                        <input type="file" ref="fileInput" @change="handleImageChange" accept="image/*" hidden>
+                        <div class="image-preview" @click="$refs.fileInput.click()">
+                            <img v-if="imagePreview" :src="imagePreview" alt="Aperçu">
+                            <div v-else class="upload-placeholder">
+                                <i class='bx bx-cloud-upload'></i>
+                                <span>Cliquez pour uploader</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>Description</label>
-                    <textarea v-model="productForm.description" placeholder="Description du produit..."></textarea>
+                    <textarea v-model="productForm.description" placeholder="Description du produit..." required></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" @click="closeProductModal" :disabled="submitting">Annuler</button>
@@ -157,6 +184,48 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Détails Produit -->
+    <div v-if="showDetailsModal && selectedProduct" class="modal-overlay" @click.self="closeDetailsModal">
+        <div class="modal details-modal">
+            <div class="modal-header">
+                <h2>Détails du produit</h2>
+                <button class="btn-close" @click="closeDetailsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="details-grid">
+                    <div class="details-image">
+                        <img :src="getImageUrl(selectedProduct.image)" :alt="selectedProduct.name">
+                    </div>
+                    <div class="details-info">
+                        <div class="detail-item">
+                            <label>Nom</label>
+                            <p>{{ selectedProduct.name }}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Prix</label>
+                            <p class="price">{{ selectedProduct.price }} FCFA</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Stock</label>
+                            <p :class="{ 'low-stock': selectedProduct.quantity < 5 }">{{ selectedProduct.quantity }} unités</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Catégorie</label>
+                            <p>{{ selectedProduct.category?.label || 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item full-width mt-4">
+                    <label>Description</label>
+                    <p class="description-text">{{ selectedProduct.description }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" @click="closeDetailsModal">Fermer</button>
+            </div>
         </div>
     </div>
 
@@ -222,6 +291,12 @@ onUnmounted(() => {
 });
 const editingProduct = ref(null);
 const submitting = ref(false);
+const activeMenu = ref(null);
+const showDetailsModal = ref(false);
+const selectedProduct = ref(null);
+const imagePreview = ref(null);
+const fileInput = ref(null);
+
 const productForm = ref({
     name: '',
     price: '',
@@ -232,6 +307,7 @@ const productForm = ref({
 
 const openProductModal = (product = null) => {
     editingProduct.value = product;
+    imagePreview.value = getImageUrl(product?.image);
     if (product) {
         productForm.value = {
             name: product.name,
@@ -239,7 +315,7 @@ const openProductModal = (product = null) => {
             quantity: product.quantity,
             category_id: product.category_id,
             description: product.description,
-            image: product.image
+            image: null // On ne pré-remplit pas le fichier
         };
     } else {
         productForm.value = {
@@ -257,19 +333,54 @@ const openProductModal = (product = null) => {
 const closeProductModal = () => {
     showProductModal.value = false;
     editingProduct.value = null;
+    imagePreview.value = null;
+};
+
+const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `/storage/${path}`;
+};
+
+const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        productForm.value.image = file;
+        imagePreview.value = URL.createObjectURL(file);
+    }
+};
+
+const toggleActionMenu = (id) => {
+    activeMenu.value = activeMenu.value === id ? null : id;
+};
+
+const viewDetails = (product) => {
+    selectedProduct.value = product;
+    showDetailsModal.value = true;
+    activeMenu.value = null;
+};
+
+const closeDetailsModal = () => {
+    showDetailsModal.value = false;
+    selectedProduct.value = null;
 };
 
 const saveProduct = async () => {
     if (submitting.value) return;
     
-    // Préparer les données pour envoyer uniquement ce que le backend attend
+    // Pour l'ajout, l'image est obligatoire
+    if (!editingProduct.value && !productForm.value.image) {
+        notificationStore.error('L\'image du produit est obligatoire');
+        return;
+    }
+
     const dataToSend = {
         name: productForm.value.name,
-        price: parseFloat(productForm.value.price),
-        quantity: parseInt(productForm.value.quantity),
+        price: productForm.value.price,
+        quantity: productForm.value.quantity,
         category_id: productForm.value.category_id,
         description: productForm.value.description,
-        image: productForm.value.image || null
+        image: productForm.value.image
     };
 
     submitting.value = true;
@@ -310,7 +421,13 @@ onMounted(() => {
     productStore.fetchProducts();
     productStore.fetchCategories();
     orderStore.fetchOrders();
-    document.addEventListener('click', closeFilterMenu);
+    document.addEventListener('click', (e) => {
+        closeFilterMenu(e);
+        // Fermer le menu d'actions si on clique ailleurs
+        if (activeMenu.value && !e.target.closest('.action-menu-container')) {
+            activeMenu.value = null;
+        }
+    });
 });
 
 
@@ -820,7 +937,187 @@ select {
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
+.btn-secondary:hover {
+    background: var(--background);
+}
+
+/* Action Menu */
+.action-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-dots {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text);
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-dots:hover {
+    background: var(--background);
+}
+
+.action-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    z-index: 100;
+    min-width: 180px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.action-dropdown button {
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text);
+    transition: background 0.2s;
+}
+
+.action-dropdown button:hover {
+    background: var(--background);
+}
+
+.action-dropdown button.delete {
+    color: #f44336;
+}
+
+.action-dropdown button i {
+    font-size: 1.1rem;
+}
+
+/* Image Upload */
+.image-upload-wrapper {
+    margin-top: 0.5rem;
+}
+
+.image-preview {
+    width: 100%;
+    height: 200px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: var(--background);
+    transition: border-color 0.2s;
+}
+
+.image-preview:hover {
+    border-color: var(--primary);
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: #999;
+}
+
+.upload-placeholder i {
+    font-size: 2.5rem;
+}
+
+.form-group label span {
+    font-size: 0.8rem;
+    color: #f44336;
+    font-weight: 400;
+}
+
+/* Details Modal */
+.details-modal {
+    max-width: 700px !important;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+}
+
+.details-image img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.detail-item label {
+    display: block;
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 0.25rem;
+}
+
+.detail-item p {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.detail-item p.price {
+    color: var(--primary);
+    font-size: 1.3rem;
+}
+
+.low-stock {
+    color: #f44336;
+}
+
+.details-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.description-text {
+    font-weight: 400 !important;
+    line-height: 1.6;
+    color: var(--text-light);
+    background: var(--background);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.mt-4 { margin-top: 1.5rem; }
+
+@media (max-width: 600px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
