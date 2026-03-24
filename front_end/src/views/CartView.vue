@@ -80,7 +80,7 @@ const handleCheckout = async () => {
         }
         cartStore.items = [];
         cartStore.saveCart();
-        router.push({ name: 'client-profile' }); // Redirect to profile to see orders
+        router.push({ name: 'client-orders' }); // Redirect to orders to see status
     } catch (err) {
         console.error('Checkout error:', err.response?.data || err);
         alert('Erreur lors de la commande: ' + (err.response?.data?.message || err.message));
