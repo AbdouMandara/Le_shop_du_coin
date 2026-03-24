@@ -1,5 +1,6 @@
 <template>
   <div class="app-layout">
+    <NotificationToast />
     <header class="global-header">
       <div class="header-logo">
         <span class="header-title">Le shop du coin</span>
@@ -29,6 +30,7 @@
 
 <script setup>
 import Sidebar from '@/components/Sidebar.vue';
+import NotificationToast from '@/components/NotificationToast.vue';
 import { onMounted } from 'vue';
 import { useThemeStore } from '@/stores/theme';
 import { useAuthStore } from '@/stores/auth';

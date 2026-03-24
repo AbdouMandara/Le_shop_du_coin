@@ -191,6 +191,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useProductStore } from '@/stores/products';
 import { useOrderStore } from '@/stores/orders';
+import { useNotificationStore } from '@/stores/notifications';
 import ProductCard from '@/components/ProductCard.vue';
 import {useAuthStore}  from '@/stores/auth'
 // coté admin
@@ -198,6 +199,7 @@ import {useAuthStore}  from '@/stores/auth'
 const productStore = useProductStore();
 const authStore = useAuthStore()
 const orderStore = useOrderStore();
+const notificationStore = useNotificationStore();
 const tab = ref('products');
 
 const showProductModal = ref(false);
@@ -266,17 +268,18 @@ const saveProduct = async () => {
     try {
         if (editingProduct.value) {
             await productStore.updateProduct(editingProduct.value.id, dataToSend);
+            notificationStore.success('Produit mis à jour avec succès');
         } else {
             await productStore.addProduct(dataToSend);
+            notificationStore.success('Produit ajouté avec succès');
         }
         closeProductModal();
     } catch (error) {
         console.error('Erreur lors de la sauvegarde du produit:', error);
         if (error.response && error.response.data && error.response.data.errors) {
-            console.table(error.response.data.errors);
-            alert('Erreur de validation: ' + JSON.stringify(error.response.data.errors));
+            notificationStore.error('Erreur de validation: ' + Object.values(error.response.data.errors).flat().join(', '));
         } else {
-            alert('Erreur lors de la sauvegarde: ' + (error.response?.data?.message || error.message));
+            notificationStore.error('Erreur lors de la sauvegarde: ' + (error.response?.data?.message || error.message));
         }
     }
 };
@@ -285,8 +288,10 @@ const deleteProduct = async (id) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
         try {
             await productStore.deleteProduct(id);
+            notificationStore.success('Produit supprimé avec succès');
         } catch (error) {
             console.error('Erreur lors de la suppression du produit:', error);
+            notificationStore.error('Erreur lors de la suppression');
         }
     }
 };

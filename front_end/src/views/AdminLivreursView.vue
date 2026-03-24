@@ -84,12 +84,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import api from '@/services/api';
+import { useNotificationStore } from '@/stores/notifications';
 
 const livreurs = ref([]);
 const roles = ref([]);
 const loading = ref(true);
 const submitting = ref(false);
 const showAddModal = ref(false);
+const notificationStore = useNotificationStore();
 
 // Empêcher le scroll du body quand le modal est ouvert
 watch(showAddModal, (val) => {
@@ -145,8 +147,9 @@ const handleAddLivreur = async () => {
         await fetchLivreurs();
         showAddModal.value = false;
         newLivreur.value = { name: '', email: '', password: '' };
+        notificationStore.success('Livreur ajouté avec succès');
     } catch (err) {
-        alert(err.response?.data?.message || 'Erreur lors de la création');
+        notificationStore.error(err.response?.data?.message || 'Erreur lors de la création');
     } finally {
         submitting.value = false;
     }
@@ -157,8 +160,9 @@ const confirmDelete = async (livreur) => {
         try {
             await api.delete(`/admin/users/${livreur.id}`);
             await fetchLivreurs();
+            notificationStore.success('Livreur supprimé avec succès');
         } catch (err) {
-            alert('Erreur lors de la suppression');
+            notificationStore.error('Erreur lors de la suppression');
         }
     }
 };
