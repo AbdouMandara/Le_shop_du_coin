@@ -32,6 +32,6 @@ class FavoriteController extends Controller
         }
 
         $favorite->delete();
-        return response()->json(null, 24);
+        return response()->json(null, 204);
     }
 }

@@ -4,10 +4,10 @@
     :class="{ 'sidebar--collapsed': collapsed }"
   >
     <header class="sidebar__header">
-      <!-- <div v-if="!collapsed" class="sidebar__logo">
+       <div v-if="!collapsed" class="sidebar__logo">
         <i class='bx bx-store-alt'></i>
         <span>Shop</span>
-      </div> -->
+      </div> 
       <button class="sidebar__toggle" @click="toggleSidebar">
         <i :class="collapsed ? 'bx bx-menu' : 'bx bx-chevron-left'"></i>
       </button>
@@ -45,6 +45,10 @@
             </button>
             
             <div v-if="showUserMenu && !collapsed" class="user-modal">
+               <button class="user-modal-item" @click="modif_parametres">
+                  <i class='bx bx-edit'></i>
+                  Modifier les paramètres
+               </button>
                <button class="user-modal-item" @click="handleLogout">
                   <i class='bx bx-log-out'></i>
                   Déconnexion
@@ -127,6 +131,16 @@ const handleLogout = async () => {
     await authStore.logout();
     router.push({ name: 'login' });
 };
+
+const modif_parametres = async()=>{
+  if(authStore.isUser){
+    router.push({name : "client-parameters"})
+  }else if(authStore.isLivreur){
+    router.push({name : "livreur-parameters"})
+  }else{
+    router.push({name : "admin-parameters"})
+  }
+}
 </script>
 
 <style scoped>

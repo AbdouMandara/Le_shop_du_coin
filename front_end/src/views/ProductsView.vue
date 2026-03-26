@@ -223,9 +223,6 @@
                     <p class="description-text">{{ selectedProduct.description }}</p>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" @click="closeDetailsModal">Fermer</button>
-            </div>
         </div>
     </div>
 
@@ -360,11 +357,6 @@ const viewDetails = (product) => {
     activeMenu.value = null;
 };
 
-const closeDetailsModal = () => {
-    showDetailsModal.value = false;
-    selectedProduct.value = null;
-};
-
 const saveProduct = async () => {
     if (submitting.value) return;
     
@@ -458,7 +450,10 @@ const topCategories = computed(() => {
         .sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0))
         .slice(0, 3);
 });
-
+const closeDetailsModal = () => {
+    showDetailsModal.value = false;
+    selectedProduct.value = null;
+};
 const filteredProducts = computed(() => {
     // 1. Filtrer
     let result = productStore.products.filter(p => {
@@ -495,6 +490,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
+.btn-secondary {
+    background: var(--neutral);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: var(--background);
+}
 .products-page {
     padding: 2rem;
     max-width: 1400px;
@@ -911,13 +920,6 @@ select {
     min-height: 100px;
 }
 
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
 .btn-primary {
     background: var(--primary);
     color: white;
@@ -927,20 +929,6 @@ select {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
-}
-
-.btn-secondary {
-    background: var(--neutral);
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-secondary:hover {
-    background: var(--background);
 }
 
 /* Action Menu */

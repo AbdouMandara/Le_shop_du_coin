@@ -14,8 +14,9 @@ export const useCartStore = defineStore('cart', {
     actions: {
         getPrefix() {
             const authStore = useAuthStore();
-            if (authStore.isUser) return '/client';
-            return '';
+            if (authStore.isAdmin) return '/admin';
+            if (authStore.isLivreur) return '/livreur';
+            return '/client'; // Default for authenticated users in this context
         },
         addToCart(product) {
             const existing = this.items.find(i => i.id === product.id);
