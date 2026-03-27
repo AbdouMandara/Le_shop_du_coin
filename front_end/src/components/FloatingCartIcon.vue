@@ -37,7 +37,8 @@
           <div v-else class="cart-items">
             <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
               <div class="item-img-container">
-                <img :src="item.image || '/placeholder.png'" :alt="item.name">
+                <img v-if="item.image" :src="getImageUrl(item.image)" :alt="item.name">
+                <i v-else class='bx bx-image'></i>
               </div>
               <div class="item-info">
                 <span class="item-name">{{ item.name }}</span>
@@ -100,6 +101,12 @@ const isVisible = computed(() => {
 
 const toggleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value;
+};
+
+const getImageUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `/storage/${path}`;
 };
 
 const checkout = () => {
@@ -265,16 +272,26 @@ const checkout = () => {
   height: 60px;
   border-radius: 8px;
   overflow: hidden;
-  background: white;
+  background: var(--neutral);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .item-img-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.item-img-container i {
+  font-size: 1.5rem;
+  color: var(--border);
+  opacity: 0.5;
 }
 
 .item-info {

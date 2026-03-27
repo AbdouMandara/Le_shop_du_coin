@@ -1,7 +1,10 @@
 <template>
   <div class="product-card">
     <div class="product-card__image">
-      <img :src="getProductImage" :alt="product.name" />
+      <div class="product-card__image-wrapper">
+        <img v-if="product.image" :src="getProductImage" :alt="product.name" />
+        <i v-else class='bx bx-image'></i>
+      </div>
       <button 
         class="product-card__favorite" 
         @click.stop="cartStore.toggleFavorite(product.id)"
@@ -158,6 +161,7 @@ const getProductImage = computed(() => {
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -270,5 +274,38 @@ const getProductImage = computed(() => {
 
 [data-theme='dark'] .product-card__image {
   background-color: #111;
+}
+
+.product-card__image-wrapper {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--neutral) 25%, var(--border) 50%, var(--neutral) 75%);
+  background-size: 200% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card__image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.product-card__image-wrapper i {
+  font-size: 3.5rem;
+  color: var(--border);
+  opacity: 0.5;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>
