@@ -140,7 +140,6 @@ const checkout = () => {
   font-size: 1.8rem;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
 }
 
@@ -148,9 +147,7 @@ const checkout = () => {
   background: var(--secondary);
 }
 
-.cart-btn.active {
-  transform: scale(0.9);
-}
+
 
 .cart-badge {
   position: absolute;
@@ -205,7 +202,6 @@ const checkout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
 }
 
 .close-btn:hover {
@@ -240,7 +236,6 @@ const checkout = () => {
   color: white;
   border-radius: 8px;
   font-weight: 500;
-  transition: background 0.2s;
 }
 
 .shop-now-btn:hover {
@@ -260,12 +255,9 @@ const checkout = () => {
   padding: 0.75rem;
   background: var(--neutral);
   border-radius: 12px;
-  transition: transform 0.2s;
 }
 
-.cart-item:hover {
-  transform: translateX(-5px);
-}
+
 
 .item-img-container {
   width: 60px;
@@ -327,12 +319,9 @@ const checkout = () => {
   cursor: pointer;
   padding: 0.5rem;
   font-size: 1.1rem;
-  transition: transform 0.2s;
 }
 
-.remove-btn:hover {
-  transform: scale(1.2);
-}
+
 
 .drawer-footer {
   padding: 1.5rem;
@@ -371,7 +360,6 @@ const checkout = () => {
   font-weight: 600;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
   border: none;
   width: 100%;
 }
@@ -383,7 +371,6 @@ const checkout = () => {
 
 .btn-primary:hover {
   background: var(--secondary);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .btn-secondary {

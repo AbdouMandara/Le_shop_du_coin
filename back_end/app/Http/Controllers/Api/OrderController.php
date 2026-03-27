@@ -14,15 +14,30 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role->label === 'admin') {
-            return OrderResource::collection(Order::with(['user', 'product'])->latest()->paginate(10));
-        }
-        
-        if ($request->user()->role->label === 'livreur') {
-            return OrderResource::collection(Order::whereIn('status', ['paid', 'delivered'])->with(['user', 'product'])->latest()->paginate(10));
+        $user = $request->user();
+        $query = Order::with(['user', 'product'])->latest();
+
+        if ($user->role->label === 'livreur') {
+            $query->whereIn('status', ['paid', 'delivered']);
+        } elseif ($user->role->label === 'client') {
+            $query->where('user_id', $user->id);
         }
 
-        return OrderResource::collection($request->user()->orders()->with('product')->latest()->get());
+        // Filters for Admin and Livreur
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        // Return all for client, paginated for others
+        if ($user->role->label === 'client') {
+            return OrderResource::collection($query->get());
+        }
+
+        return OrderResource::collection($query->paginate(10));
     }
 
     public function store(OrderRequest $request)

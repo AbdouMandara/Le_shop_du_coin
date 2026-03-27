@@ -205,7 +205,6 @@ const modif_parametres = async()=>{
   padding: 0.85rem 1.75rem;
   color: var(--text);
   opacity: 0.7;
-  transition: all 0.2s ease;
   border-left: 4px solid transparent;
   width: 100%;
   white-space: nowrap;
@@ -272,7 +271,6 @@ const modif_parametres = async()=>{
   gap: 0.75rem;
   padding: 0.5rem;
   border-radius: 8px;
-  transition: background-color 0.2s;
 }
 
 .user-profile:hover {
@@ -357,7 +355,6 @@ const modif_parametres = async()=>{
   gap: 0.5rem;
   color: var(--text);
   font-size: 0.9rem;
-  transition: background-color 0.2s, color 0.2s;
 }
 
 .user-modal-item:hover {

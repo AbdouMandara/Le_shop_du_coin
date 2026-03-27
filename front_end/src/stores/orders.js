@@ -15,12 +15,12 @@ export const useOrderStore = defineStore('orders', {
             if (authStore.isUser) return '/client';
             return '';
         },
-        async fetchOrders() {
+        async fetchOrders(params = {}) {
             this.loading = true;
             try {
                 const prefix = this.getPrefix();
-                const response = await api.get(`${prefix}/orders`);
-                this.orders = response.data.data; // Je mets response.data.data car coté laravel j'ai utilisé les collection dans les resources
+                const response = await api.get(`${prefix}/orders`, { params });
+                this.orders = response.data.data;
             } finally {
                 this.loading = false;
             }

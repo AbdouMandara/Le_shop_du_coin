@@ -86,7 +86,6 @@ const getProductImage = computed(() => {
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
-  transition: box-shadow 0.4s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -94,7 +93,6 @@ const getProductImage = computed(() => {
 }
 
 .product-card:hover {
-  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
   border-color: var(--primary);
   z-index: 2;
 }
@@ -129,7 +127,6 @@ const getProductImage = computed(() => {
   color: #666;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
   z-index: 10;
 }
 
@@ -204,7 +201,6 @@ const getProductImage = computed(() => {
   font-size: 0.95rem;
   cursor: pointer;
   width: 100%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -218,7 +214,6 @@ const getProductImage = computed(() => {
 
 .product-card__add-btn:hover {
   background-color: var(--secondary);
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
 }
 
 .product-card__qty-controls {
@@ -231,7 +226,6 @@ const getProductImage = computed(() => {
   width: 100%;
   height: 46px;
   overflow: hidden;
-  transition: border-color 0.3s ease;
   padding: 0 0.35em;
 }
 
@@ -247,7 +241,6 @@ const getProductImage = computed(() => {
   cursor: pointer;
   font-size: 1.2rem;
   color: var(--text);
-  transition: all 0.2s ease;
 }
 
 .product-card__qty-controls button:hover:not(:disabled) {

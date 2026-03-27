@@ -560,7 +560,6 @@ onUnmounted(() => {
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.2s ease;
 }
 
 .cat-chip:hover {
@@ -592,8 +591,8 @@ onUnmounted(() => {
     color: var(--text);
     cursor: pointer;
     font-weight: 500;
-    transition: all 0.2s;
 }
+
 
 .action-btn:hover {
     border-color: var(--primary);
@@ -928,7 +927,6 @@ select {
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
 /* Action Menu */
@@ -948,7 +946,6 @@ select {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
 }
 
 .btn-dots:hover {
@@ -981,7 +978,6 @@ select {
     align-items: center;
     gap: 0.75rem;
     color: var(--text);
-    transition: background 0.2s;
 }
 
 .action-dropdown button:hover {
@@ -1012,7 +1008,6 @@ select {
     justify-content: center;
     cursor: pointer;
     background: var(--background);
-    transition: border-color 0.2s;
 }
 
 .image-preview:hover {
