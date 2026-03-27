@@ -9,7 +9,7 @@
         <span>Shop</span>
       </div> 
       <button class="sidebar__toggle" @click="toggleSidebar">
-        <i :class="collapsed ? 'bx bx-menu' : 'bx bx-chevron-left'"></i>
+        <i class="bx bx-dock-right"></i>
       </button>
       
     </header>
