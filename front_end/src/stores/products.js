@@ -23,8 +23,20 @@ export const useProductStore = defineStore('products', {
             this.loading = true;
             try {
                 const prefix = this._getPrefix();
-                const response = await api.get(`${prefix}/products`);
+                const url = prefix ? `${prefix}/products` : '/products';
+                const response = await api.get(url);
                 this.products = response.data.data;
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                // Fallback attempt if we were trying an auth route
+                if (this._getPrefix() !== '') {
+                    try {
+                        const response = await api.get('/products');
+                        this.products = response.data.data;
+                    } catch (e) {
+                        console.error("Fallback fetch failed:", e);
+                    }
+                }
             } finally {
                 this.loading = false;
             }

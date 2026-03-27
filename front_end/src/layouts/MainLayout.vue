@@ -25,12 +25,14 @@
         </router-view>
       </main>
     </div>
+    <FloatingCartIcon />
   </div>
 </template>
 
 <script setup>
 import Sidebar from '@/components/Sidebar.vue';
 import NotificationToast from '@/components/NotificationToast.vue';
+import FloatingCartIcon from '@/components/FloatingCartIcon.vue';
 import { onMounted } from 'vue';
 import { useThemeStore } from '@/stores/theme';
 import { useAuthStore } from '@/stores/auth';
