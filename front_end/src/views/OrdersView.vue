@@ -20,16 +20,7 @@
             </div>
             
             <div class="filter-dropdown-body">
-              <div class="filter-group">
-                <label>Statut de commande</label>
-                <select v-model="filters.status" class="filter-input">
-                  <option value="">Tous les statuts</option>
-                  <option value="pending">En attente</option>
-                  <option value="paid">Payée</option>
-                  <option value="delivered">Livrée</option>
-                  <option value="canceled">Annulée</option>
-                </select>
-              </div>
+
               <div class="filter-group">
                 <label>Date de création</label>
                 <input type="date" v-model="filters.date" class="filter-input">
@@ -55,60 +46,80 @@
       <p>Aucune commande trouvée.</p>
     </div>
 
-    <div v-else class="orders-list" :class="{ 'admin-grid': !authStore.isUser }">
-      <div v-for="order in orderStore.orders" :key="order.id" class="order-card">
-        <div class="order-info">
-          <div class="order-header">
-             <span class="order-id">Commande #{{ order.id.substring(0,8) }}</span>
-             <span class="order-date">{{ formatDate(order.created_at) }}</span>
-          </div>
-          <div class="order-product">
-             <h4>{{ order.product?.name || 'Produit inconnu' }}</h4>
-             <p v-if="!authStore.isUser && order.user">Client: {{ order.user.name }}</p>
-             <p v-if="order.delivery">Avec livraison</p>
-             <p v-if="order.livreur" class="assigned-to">
-                <i class='bx bx-user-check'></i> Livreur: {{ order.livreur.name }}
-             </p>
-          </div>
-        </div>
+    <div v-else class="orders-list" :class="{ 'admin-grid': !authStore.isUser, 'client-list': authStore.isUser }">
+      <div v-for="group in groupedOrders" :key="group.id" :class="authStore.isUser ? 'client-order-card' : 'order-card'">
         
-        <div class="order-card-footer">
-          <div class="status-container">
-            <span v-if="authStore.isUser" :class="['status-badge', order.status]">
-               {{ formatStatus(order.status) }}
-            </span>
-            <select 
-               v-else 
-               v-model="order.status" 
-               @change="updateStatus(order.id, order.status)"
-               class="status-select"
-            >
-               <option value="pending">En attente</option>
-               <option value="paid">Payée</option>
-               <option value="delivered">Livrée</option>
-               <option value="canceled">Annulée</option>
-            </select>
+        <!-- Vue Admin / Livreur (Ancienne vue conservée) -->
+        <template v-if="!authStore.isUser">
+          <div class="order-info">
+            <div class="order-header">
+               <span class="order-id">Commande {{ group.user ? 'de ' + group.user.name : '' }}</span>
+               <span class="order-date">{{ formatDate(group.created_at) }}</span>
+            </div>
+            <div class="order-product">
+               <div style="margin-bottom: 0.5rem">
+                   <p v-for="item in group.items" :key="item.id" style="margin: 0;font-weight: 500;">
+                     - {{ item.product?.name || 'Produit inconnu' }} ({{ item.product?.price }} FCFA)
+                   </p>
+               </div>
+               <p v-if="group.delivery">Avec livraison</p>
+               <p v-if="group.livreur" class="assigned-to">
+                  <i class='bx bx-user-check'></i> Livreur: {{ group.livreur.name }}
+               </p>
+            </div>
           </div>
           
-          <div class="action-buttons">
-            <button 
-               v-if="!authStore.isUser && order.delivery" 
-               @click="openAssignModal(order)"
-               class="btn-assign"
-               :disabled="order.livreur_id"
-            >
-               <i class='bx bx-user-plus'></i> {{ order.livreur_id ? 'Assignée' : 'Assigner' }}
-            </button>
-            <button 
-               v-if="authStore.isUser" 
-               @click="downloadInvoice(order.id)" 
-               class="btn-download"
-               title="Télécharger la facture"
-            >
-               <i class='bx bxs-file-pdf'></i> PDF
-            </button>
+          <div class="order-card-footer">
+            <div class="action-buttons">
+              <button 
+                 v-if="group.delivery" 
+                 @click="openAssignModal(group)"
+                 class="btn-assign"
+                 :disabled="group.livreur_id"
+              >
+                 <i class='bx bx-user-plus'></i> {{ group.livreur_id ? 'Assignée' : 'Assigner' }}
+              </button>
+            </div>
           </div>
-        </div>
+        </template>
+
+        <!-- Vue Client (Design en grille 2 colonnes avec modal détails) -->
+        <template v-else>
+          <div class="client-card-content">
+            <div class="client-order-main">
+              <h4 class="client-product-name">
+                Commande #{{ group.items[0]?.id.substring(0,8).toUpperCase() }}
+              </h4>
+              <p class="client-order-meta">
+                 Statut : <strong style="color:var(--primary)">{{ getClientStatus(group) }}</strong>
+              </p>
+              <p class="client-order-meta">
+                Date : {{ formatDate(group.created_at) }} 
+              </p>
+              <p class="client-order-price">
+                Total : {{ group.totalPrice }} FCFA
+              </p>
+            </div>
+
+            <div class="client-order-actions">
+              <button 
+                 @click="openDetailsModal(group)" 
+                 class="btn-secondary-minimal"
+                 title="Voir les détails"
+              >
+                 <i class='bx bx-show'></i> Détails
+              </button>
+              <button 
+                 @click="downloadInvoice(group.items[0].id)" 
+                 class="btn-download-minimal"
+                 title="Télécharger la facture globale"
+              >
+                 <i class='bx bx-printer'></i> Imprimer
+              </button>
+            </div>
+          </div>
+        </template>
+
       </div>
     </div>
 
@@ -130,8 +141,8 @@
           <div v-if="step === 1" class="step-content">
              <h3>Détails de la commande</h3>
              <div class="detail-row">
-                <span>Produit:</span>
-                <strong>{{ selectedOrder?.product?.name }}</strong>
+                <span>Produits:</span>
+                <strong>{{ selectedOrder?.items?.map(i => i.product?.name).join(', ') }}</strong>
              </div>
              <div class="detail-row">
                 <span>Client:</span>
@@ -165,7 +176,7 @@
 
           <div v-if="step === 3" class="step-content">
              <h3>Confirmer l'assignation</h3>
-             <p>Vous êtes sur le point d'assigner la commande <strong>#{{ selectedOrder?.id.substring(0,8) }}</strong> au livreur <strong>{{ selectedLivreur?.name }}</strong>.</p>
+             <p>Vous êtes sur le point d'assigner la commande contenant <strong>{{ selectedOrder?.items?.length }} produit(s)</strong> au livreur <strong>{{ selectedLivreur?.name }}</strong>.</p>
              <p class="warning-text">Le statut de la commande sera mis à jour.</p>
           </div>
         </div>
@@ -176,6 +187,51 @@
            <button v-if="step === 3" @click="confirmAssignment" class="btn-primary" :disabled="assigning">
               {{ assigning ? 'Assignation...' : 'Confirmer' }}
            </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Client Details Modal -->
+    <div v-if="showDetailsModal && selectedOrderDetails" class="modal-overlay" @click.self="closeDetailsModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Détails de la Commande</h2>
+          <button @click="closeDetailsModal" class="btn-close">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+           <div class="step-content">
+              <h3>Produits commandés</h3>
+              <div class="detail-row" v-for="item in selectedOrderDetails.items" :key="item.id" style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed var(--border);border-radius: 0;">
+                 <div style="display:flex; align-items:center; gap:0.5rem">
+                    <i class='bx bx-package'></i>
+                    <span>{{ item.product?.name }}</span>
+                 </div>
+                 <strong>{{ item.product?.price }} FCFA</strong>
+              </div>
+              
+              <h3 style="margin-top:1.5rem">Informations</h3>
+              <div class="detail-row">
+                 <span>Date :</span>
+                 <strong>{{ formatDate(selectedOrderDetails.created_at) }}</strong>
+              </div>
+              <div class="detail-row">
+                 <span>Récupération :</span>
+                 <strong>{{ selectedOrderDetails.delivery ? 'Livraison à domicile' : 'Retrait en magasin' }}</strong>
+              </div>
+              <div class="detail-row">
+                 <span>Statut :</span>
+                 <strong>{{ getClientStatus(selectedOrderDetails) }}</strong>
+              </div>
+              <div class="detail-row" style="background:var(--neutral); margin-top:1rem;">
+                 <span>Total :</span>
+                 <strong style="color:var(--primary); font-size:1.1rem;">{{ selectedOrderDetails.totalPrice }} FCFA</strong>
+              </div>
+           </div>
+        </div>
+        
+        <div class="modal-footer">
+           <button @click="closeDetailsModal" class="btn-primary">Fermer</button>
         </div>
       </div>
     </div>
@@ -191,8 +247,35 @@ import api from '@/services/api';
 const orderStore = useOrderStore();
 const authStore = useAuthStore();
 
+const groupedOrders = computed(() => {
+    const groups = {};
+    orderStore.orders.forEach(order => {
+        const d = new Date(order.created_at);
+        const minuteKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}-${d.getMinutes()}`;
+        const groupKey = `${order.user?.id || 'guest'}_${minuteKey}_${order.delivery}`;
+        
+        if (!groups[groupKey]) {
+            groups[groupKey] = {
+                id: groupKey, 
+                created_at: order.created_at,
+                delivery: order.delivery,
+                status: order.status,
+                user: order.user,
+                livreur: order.livreur,
+                livreur_id: order.livreur_id,
+                items: [],
+                totalPrice: 0
+            };
+        }
+        groups[groupKey].items.push(order);
+        if (order.product && order.product.price) {
+            groups[groupKey].totalPrice += parseFloat(order.product.price);
+        }
+    });
+    return Object.values(groups).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+});
+
 const filters = reactive({
-    status: '',
     date: ''
 });
 
@@ -207,15 +290,32 @@ const selectedLivreur = ref(null);
 const loadingLivreurs = ref(false);
 const assigning = ref(false);
 
+const showDetailsModal = ref(false);
+const selectedOrderDetails = ref(null);
+
+const openDetailsModal = (group) => {
+    selectedOrderDetails.value = group;
+    showDetailsModal.value = true;
+};
+
+const closeDetailsModal = () => {
+    showDetailsModal.value = false;
+    selectedOrderDetails.value = null;
+};
+
+const getClientStatus = (group) => {
+    if (!group.delivery) return "Commandée";
+    if (group.status === 'delivered') return "Livrée";
+    return "En cours de livraison";
+};
+
 const activeFiltersCount = computed(() => {
     let count = 0;
-    if (filters.status) count++;
     if (filters.date) count++;
     return count;
 });
 
 const resetFilters = () => {
-    filters.status = '';
     filters.date = '';
 };
 
@@ -244,23 +344,7 @@ const formatDate = (dateString) => {
     return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' }).format(date);
 };
 
-const formatStatus = (status) => {
-    const map = {
-        pending: 'En attente',
-        paid: 'Payée',
-        delivered: 'Livrée',
-        canceled: 'Annulée'
-    };
-    return map[status] || status;
-};
 
-const updateStatus = async (orderId, newStatus) => {
-    try {
-        await orderStore.updateOrderStatus(orderId, newStatus);
-    } catch (err) {
-        alert('Erreur lors de la mise à jour du statut');
-    }
-};
 
 const openAssignModal = (order) => {
     selectedOrder.value = order;
@@ -299,9 +383,11 @@ const nextStep = async () => {
 const confirmAssignment = async () => {
     assigning.value = true;
     try {
-        await api.patch(`/admin/orders/${selectedOrder.value.id}/assign`, {
-            livreur_id: selectedLivreur.value.id
-        });
+        await Promise.all(selectedOrder.value.items.map(o => 
+            api.patch(`/admin/orders/${o.id}/assign`, {
+                livreur_id: selectedLivreur.value.id
+            })
+        ));
         await orderStore.fetchOrders();
         closeAssignModal();
     } catch (err) {
@@ -572,35 +658,7 @@ const downloadInvoice = async (orderId) => {
     gap: 0.5rem;
 }
 
-.status-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
 
-.status-badge.pending { background-color: #fff3cd; color: #856404; }
-.status-badge.paid { background-color: #d4edda; color: #155724; }
-.status-badge.delivered { background-color: #d1ecf1; color: #0c5460; }
-.status-badge.canceled { background-color: #f8d7da; color: #721c24; }
-
-.status-select {
-    padding: 0.6rem 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background-color: var(--background);
-    color: var(--text);
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-    max-width: 120px;
-}
-
-.status-select:focus {
-    border-color: var(--primary);
-}
 
 .btn-download, .btn-assign {
     background-color: var(--primary);
@@ -836,6 +894,104 @@ const downloadInvoice = async (orderId) => {
 @media (max-width: 768px) {
   .orders-list.admin-grid {
       grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   Client Grid 2-Column Order Styles
+   ========================================= */
+.client-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  background: transparent;
+  border: none;
+  overflow: visible;
+}
+
+.client-order-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.client-order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background-color: var(--surface);
+}
+
+.client-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.client-order-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.client-product-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.client-order-meta {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #555;
+  display: flex;
+  justify-content: space-between;
+}
+
+.client-order-price {
+  font-weight: 800;
+  color: var(--text);
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.client-order-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.btn-download-minimal, .btn-secondary-minimal {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn-download-minimal:hover, .btn-secondary-minimal:hover {
+  background: var(--neutral);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .client-list {
+    grid-template-columns: 1fr;
   }
 }
 </style>
