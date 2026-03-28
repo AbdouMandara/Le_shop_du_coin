@@ -24,6 +24,8 @@ class OrderRequest extends FormRequest
     {
         return [
             'product_id' => 'required|exists:products,id',
+            'delivery' => 'sometimes|boolean',
+            'delivery_location' => 'nullable|string',
         ];
     }
 }

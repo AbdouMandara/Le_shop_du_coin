@@ -25,9 +25,16 @@ export const useOrderStore = defineStore('orders', {
                 this.loading = false;
             }
         },
-        async placeOrder(productId) {
+        async placeOrder(productId, delivery = false, deliveryLocation = null) {
             const prefix = this.getPrefix();
-            await api.post(`${prefix}/orders`, { product_id: productId });
+            const payload = { 
+                product_id: productId, 
+                delivery: delivery 
+            };
+            if (delivery && deliveryLocation) {
+                payload.delivery_location = deliveryLocation;
+            }
+            await api.post(`${prefix}/orders`, payload);
             await this.fetchOrders();
         },
         async updateOrderStatus(orderId, status) {

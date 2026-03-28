@@ -35,6 +35,7 @@ const router = createRouter({
         { path: 'client/products', name: 'client-products', component: () => import('../views/ProductsView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/favorites', name: 'favorites', component: () => import('../views/FavoritesView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/cart', name: 'cart', component: () => import('../views/CartView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/checkout', name: 'checkout', component: () => import('../views/CheckoutView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/orders', name: 'client-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/notifications', name: 'client-notifications', component: () => import('../views/NotifUserView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/parameters', name: 'client-parameters', component: () => import('../views/ParametersView.vue'), meta: { auth: true, role: 'user' } },

@@ -20,6 +20,7 @@ class OrderResource extends JsonResource
             'product_id' => $this->product_id,
             'status' => $this->status,
             'delivery' => $this->delivery,
+            'delivery_location' => $this->delivery_location,
             'payment_date' => $this->payment_date,
             'user' => new UserResource($this->whenLoaded('user')),
             'product' => new ProductResource($this->whenLoaded('product')),

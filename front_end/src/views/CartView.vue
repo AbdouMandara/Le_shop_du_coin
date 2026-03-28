@@ -20,9 +20,7 @@
                     <p>{{ item.price }} FCFA</p>
                 </div>
                 <div class="cart-item__quantity">
-                    <button @click="updateQty(item, -1)" :disabled="item.quantity <= 1">-</button>
-                    <span>{{ item.quantity }}</span>
-                    <button @click="updateQty(item, 1)">+</button>
+                    <span>Quantité: <strong>{{ item.quantity }}</strong></span>
                 </div>
                 <button class="cart-item__remove" @click="cartStore.removeFromCart(item.id)">
                     <i class='bx bx-trash'></i>
@@ -36,19 +34,14 @@
                 <span>Sous-total</span>
                 <span>{{ cartStore.totalPrice }} FCFA</span>
             </div>
-            <div class="summary-row">
-                <span>Livraison</span>
-                <span class="free">Gratuit</span>
-            </div>
             <hr />
             <div class="summary-row total">
                 <span>Total</span>
                 <span>{{ cartStore.totalPrice }} FCFA</span>
             </div>
-            <button class="btn-checkout" @click="handleCheckout" :disabled="loading">
-                <span v-if="!loading">Passer la commande</span>
-                <i v-else class='bx bx-loader-alt bx-spin'></i>
-            </button>
+            <router-link to="/client/checkout" class="btn-checkout" style="display: block; text-align: center; text-decoration: none;">
+                Continuer vers le paiement
+            </router-link>
         </div>
     </div>
   </div>

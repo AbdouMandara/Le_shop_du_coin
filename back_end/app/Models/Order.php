@@ -17,6 +17,7 @@ class Order extends Model
         'delivery',
         'status',
         'livreur_id',
+        'delivery_location',
     ];
 
     public function user()
