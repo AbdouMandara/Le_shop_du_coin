@@ -23,12 +23,18 @@
                 <button @click="$router.push({ name: 'livreur-order-details', params: { id: order.id } })" class="btn-secondary" style="margin-bottom: 0.5rem; width: 100%">
                     <i class='bx bx-show'></i> Voir les détails
                 </button>
-                <button v-if="order.status === 'paid'" @click="updateStatus(order.id, 'in_transit')" class="btn-transit">
-                    Prendre en compte
-                </button>
-                <button v-if="order.status === 'in_transit'" @click="updateStatus(order.id, 'delivered')" class="btn-deliver">
-                    Confirmer la livraison
-                </button>
+                <template v-if="order.status !== 'delivered' && order.status !== 'cancelled'">
+                    <select :value="order.status" @change="updateStatus(order.id, $event.target.value)" class="status-select">
+                        <option value="paid" :disabled="order.status !== 'paid'">Nouvelle (Payée)</option>
+                        <option value="in_transit" :disabled="order.status === 'in_transit' || order.status === 'delivered'">En cours de livraison</option>
+                        <option value="delivered">Livrée (Terminé)</option>
+                    </select>
+                </template>
+                <template v-else-if="order.status === 'delivered'">
+                    <div class="locked-status">
+                        <i class='bx bx-check-shield'></i> Commande Livrée
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -98,22 +104,35 @@ onMounted(() => {
 .status-badge.in_transit { background: #FFF3E0; color: #E65100; }
 .status-badge.delivered { background: #E3F2FD; color: #1565C0; }
 
-.btn-deliver, .btn-transit {
+.status-select {
     width: 100%;
-    color: #FFFFFF;
-    border: none;
-    padding: 0.75rem;
+    padding: 0.8rem;
+    border: 2px solid var(--border);
     border-radius: 8px;
-    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    background-color: var(--surface);
     cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-.btn-deliver {
-    background-color: var(--secondary);
+.status-select:focus {
+    border-color: var(--primary);
 }
 
-.btn-transit {
-    background-color: var(--primary);
+.locked-status {
+    padding: 1rem;
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #C8E6C9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .btn-secondary {

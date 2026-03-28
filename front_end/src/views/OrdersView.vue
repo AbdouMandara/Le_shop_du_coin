@@ -83,23 +83,20 @@
                  <i class='bx bx-user-plus'></i> {{ group.livreur_id ? 'Assignée' : 'Assigner' }}
               </button>
 
-              <button 
-                 v-if="authStore.isLivreur && group.status === 'paid'" 
-                 @click="updateGroupStatus(group, 'in_transit')"
-                 class="btn-assign"
-                 style="background-color: var(--primary)"
-              >
-                 <i class='bx bx-check'></i> Prendre en compte
-              </button>
-
-              <button 
-                 v-if="authStore.isLivreur && group.status === 'in_transit'" 
-                 @click="updateGroupStatus(group, 'delivered')"
-                 class="btn-assign"
-                 style="background-color: var(--secondary)"
-              >
-                 <i class='bx bx-check-double'></i> Livrée
-              </button>
+              <template v-if="authStore.isLivreur">
+                  <template v-if="group.status !== 'delivered' && group.status !== 'cancelled'">
+                      <select :value="group.status" @change="updateGroupStatus(group, $event.target.value)" class="status-select">
+                          <option value="paid" :disabled="group.status !== 'paid'">Nouvelle (Payée)</option>
+                          <option value="in_transit" :disabled="group.status === 'in_transit' || group.status === 'delivered'">En cours de livraison</option>
+                          <option value="delivered">Livrée (Terminé)</option>
+                      </select>
+                  </template>
+                  <template v-else-if="group.status === 'delivered'">
+                      <div class="locked-status">
+                          <i class='bx bx-check-shield'></i> Livrée
+                      </div>
+                  </template>
+              </template>
             </div>
           </div>
         </template>
@@ -714,7 +711,35 @@ const downloadInvoice = async (orderId) => {
     gap: 0.5rem;
 }
 
+.status-select {
+    padding: 0.6rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text);
+    background-color: var(--surface);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
 
+.status-select:focus {
+    border-color: var(--primary);
+}
+
+.locked-status {
+    padding: 0.6rem 1rem;
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #C8E6C9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
 
 .btn-download, .btn-assign {
     background-color: var(--primary);

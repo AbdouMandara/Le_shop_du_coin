@@ -19,48 +19,7 @@
 
     <div v-else class="details-container">
         
-        <!-- Informations texte -->
-        <div class="info-section">
-            <div class="info-card">
-              <h3>Produit commandé</h3>
-              <div class="detail-row">
-                 <div style="display:flex; align-items:center; gap:0.5rem">
-                    <i class='bx bx-package'></i>
-                    <span>{{ selectedOrder.product?.name }}</span>
-                 </div>
-                 <strong>{{ selectedOrder.product?.price }} FCFA</strong>
-              </div>
-            </div>
 
-            <div class="info-card">
-              <h3>Client</h3>
-              <div class="detail-row">
-                 <span>Nom :</span>
-                 <strong>{{ selectedOrder.user?.name }}</strong>
-              </div>
-              <div class="detail-row">
-                 <span>Contact :</span>
-                 <strong>{{ selectedOrder.user?.email }}</strong>
-              </div>
-            </div>
-
-            <div class="info-card">
-              <h3>Statut</h3>
-              <div class="detail-row">
-                 <span>État actuel :</span>
-                 <strong class="status-badge" :class="selectedOrder.status">{{ formatStatus(selectedOrder.status) }}</strong>
-              </div>
-            </div>
-            
-            <div class="actions-card" v-if="selectedOrder.status === 'paid' || selectedOrder.status === 'in_transit'">
-                <button v-if="selectedOrder.status === 'paid'" @click="updateStatus(selectedOrder.id, 'in_transit')" class="btn-transit">
-                    Prendre en compte
-                </button>
-                <button v-if="selectedOrder.status === 'in_transit'" @click="updateStatus(selectedOrder.id, 'delivered')" class="btn-deliver">
-                    Confirmer la livraison
-                </button>
-            </div>
-        </div>
 
         <!-- Carte de livraison -->
         <div class="map-section">
@@ -241,51 +200,8 @@ const formatStatus = (status) => {
     border: 1px dashed var(--border);
 }
 
-.details-container {
-    display: flex;
-    gap: 2rem;
-    align-items: flex-start;
-}
-
-.info-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.info-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-}
-
-.info-card h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    color: var(--text);
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem;
-    background-color: var(--background);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    margin-bottom: 0.5rem;
-}
-
-.actions-card {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
 .map-section {
-    flex: 2;
+    width: 100%;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -305,52 +221,16 @@ const formatStatus = (status) => {
 }
 
 .map-container {
-    height: 500px;
+    height: 600px;
     width: 100%;
     border-radius: 12px;
     overflow: hidden;
     border: 2px solid var(--border);
 }
 
-.status-badge {
-    padding: 0.25rem 0.6rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.status-badge.pending { background: #ECEFF1; color: #455A64; }
-.status-badge.paid { background: #E8F5E9; color: #2E7D32; }
-.status-badge.in_transit { background: #FFF3E0; color: #E65100; }
-.status-badge.delivered { background: #E3F2FD; color: #1565C0; }
-.status-badge.cancelled { background: #FFEBEE; color: #C62828; }
-
-.btn-deliver, .btn-transit {
-    width: 100%;
-    color: #FFFFFF;
-    border: none;
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.btn-deliver {
-    background-color: var(--secondary);
-}
-
-.btn-transit {
-    background-color: var(--primary);
-}
-
 @media (max-width: 900px) {
-    .details-container {
-        flex-direction: column;
-    }
-    
-    .map-section, .info-section {
-        width: 100%;
+    .map-container {
+        height: 400px;
     }
 }
 </style>
