@@ -27,6 +27,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Admin routes
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::apiResource('users', \App\Http\Controllers\Api\UserController::class);
+    Route::get('/roles', function () {
+        return response()->json(\App\Models\Role::all());
+    });
     Route::apiResource('products', ProductController::class);
     Route::apiResource('categories', CategoryController::class);
     Route::get('/stats', [StatsController::class, 'index']);

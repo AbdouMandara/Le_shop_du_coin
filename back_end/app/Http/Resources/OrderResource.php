@@ -22,6 +22,7 @@ class OrderResource extends JsonResource
             'delivery' => $this->delivery,
             'delivery_location' => $this->delivery_location,
             'payment_date' => $this->payment_date,
+            'livreur_id' => $this->livreur_id,
             'user' => new UserResource($this->whenLoaded('user')),
             'product' => new ProductResource($this->whenLoaded('product')),
             'livreur' => new UserResource($this->whenLoaded('livreur')),
