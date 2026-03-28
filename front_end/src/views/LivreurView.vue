@@ -13,14 +13,20 @@
         <div v-else class="order-card" v-for="order in orderStore.orders" :key="order.id">
             <div class="order-header">
                 <h3>Commande #{{ order.id.substring(0, 8) }}</h3>
-                <span class="status-badge" :class="order.status">{{ order.status }}</span>
+                <span class="status-badge" :class="order.status">{{ formatStatus(order.status) }}</span>
             </div>
             <div class="order-body">
                 <p><strong>Client:</strong> {{ order.user?.name }}</p>
                 <p><strong>Produit:</strong> {{ order.product?.name }}</p>
             </div>
-            <div class="order-actions" v-if="order.status === 'paid'">
-                <button @click="updateStatus(order.id, 'delivered')" class="btn-deliver">
+            <div class="order-actions">
+                <button @click="$router.push({ name: 'livreur-order-details', params: { id: order.id } })" class="btn-secondary" style="margin-bottom: 0.5rem; width: 100%">
+                    <i class='bx bx-show'></i> Voir les détails
+                </button>
+                <button v-if="order.status === 'paid'" @click="updateStatus(order.id, 'in_transit')" class="btn-transit">
+                    Prendre en compte
+                </button>
+                <button v-if="order.status === 'in_transit'" @click="updateStatus(order.id, 'delivered')" class="btn-deliver">
                     Confirmer la livraison
                 </button>
             </div>
@@ -37,6 +43,17 @@ const orderStore = useOrderStore();
 
 const updateStatus = async (id, status) => {
     await orderStore.updateOrderStatus(id, status);
+};
+
+const formatStatus = (status) => {
+    const statuses = {
+        pending: 'En attente',
+        paid: 'Payée',
+        in_transit: 'En cours',
+        delivered: 'Livrée',
+        cancelled: 'Annulée'
+    };
+    return statuses[status] || status;
 };
 
 onMounted(() => {
@@ -78,11 +95,11 @@ onMounted(() => {
 }
 
 .status-badge.paid { background: #E8F5E9; color: #2E7D32; }
+.status-badge.in_transit { background: #FFF3E0; color: #E65100; }
 .status-badge.delivered { background: #E3F2FD; color: #1565C0; }
 
-.btn-deliver {
+.btn-deliver, .btn-transit {
     width: 100%;
-    background-color: var(--secondary);
     color: #FFFFFF;
     border: none;
     padding: 0.75rem;
@@ -90,4 +107,38 @@ onMounted(() => {
     font-weight: 700;
     cursor: pointer;
 }
+
+.btn-deliver {
+    background-color: var(--secondary);
+}
+
+.btn-transit {
+    background-color: var(--primary);
+}
+
+.btn-secondary {
+    background-color: #FFFFFF;
+    color: var(--text);
+    border: 2px solid var(--border);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--neutral);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 </style>

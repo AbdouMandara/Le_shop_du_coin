@@ -53,7 +53,10 @@
         <template v-if="!authStore.isUser">
           <div class="order-info">
             <div class="order-header">
-               <span class="order-id">Commande {{ group.user ? 'de ' + group.user.name : '' }}</span>
+               <div style="display:flex; align-items:center; gap:0.5rem">
+                  <span class="order-id">Commande {{ group.user ? 'de ' + group.user.name : '' }}</span>
+                  <span class="status-badge" :class="group.status">{{ formatStatus(group.status) }}</span>
+               </div>
                <span class="order-date">{{ formatDate(group.created_at) }}</span>
             </div>
             <div class="order-product">
@@ -72,12 +75,30 @@
           <div class="order-card-footer">
             <div class="action-buttons">
               <button 
-                 v-if="group.delivery" 
+                 v-if="group.delivery && authStore.isAdmin" 
                  @click="openAssignModal(group)"
                  class="btn-assign"
                  :disabled="group.livreur_id"
               >
                  <i class='bx bx-user-plus'></i> {{ group.livreur_id ? 'Assignée' : 'Assigner' }}
+              </button>
+
+              <button 
+                 v-if="authStore.isLivreur && group.status === 'paid'" 
+                 @click="updateGroupStatus(group, 'in_transit')"
+                 class="btn-assign"
+                 style="background-color: var(--primary)"
+              >
+                 <i class='bx bx-check'></i> Prendre en compte
+              </button>
+
+              <button 
+                 v-if="authStore.isLivreur && group.status === 'in_transit'" 
+                 @click="updateGroupStatus(group, 'delivered')"
+                 class="btn-assign"
+                 style="background-color: var(--secondary)"
+              >
+                 <i class='bx bx-check-double'></i> Livrée
               </button>
             </div>
           </div>
@@ -303,6 +324,17 @@ const closeDetailsModal = () => {
     selectedOrderDetails.value = null;
 };
 
+const formatStatus = (status) => {
+    const statuses = {
+        pending: 'En attente',
+        paid: 'Payée',
+        in_transit: 'En cours',
+        delivered: 'Livrée',
+        cancelled: 'Annulée'
+    };
+    return statuses[status] || status;
+};
+
 const getClientStatus = (group) => {
     if (!group.delivery) return "Commandée";
     if (group.status === 'delivered') return "Livrée";
@@ -397,6 +429,18 @@ const confirmAssignment = async () => {
     }
 };
 
+const updateGroupStatus = async (group, status) => {
+    try {
+        const prefix = authStore.isLivreur ? '/livreur' : '/admin';
+        await Promise.all(group.items.map(o => 
+            api.patch(`${prefix}/orders/${o.id}`, { status })
+        ));
+        await orderStore.fetchOrders(filters);
+    } catch (err) {
+        alert("Erreur lors de la mise à jour du statut");
+    }
+};
+
 const downloadInvoice = async (orderId) => {
     try {
         const response = await api.get(`/client/orders/${orderId}/invoice`, { responseType: 'blob' });
@@ -427,6 +471,18 @@ const downloadInvoice = async (orderId) => {
     font-size: 2rem;
     color: var(--text);
 }
+
+.status-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.status-badge.pending { background: #ECEFF1; color: #455A64; }
+.status-badge.paid { background: #E8F5E9; color: #2E7D32; }
+.status-badge.in_transit { background: #FFF3E0; color: #E65100; }
+.status-badge.delivered { background: #E3F2FD; color: #1565C0; }
+.status-badge.cancelled { background: #FFEBEE; color: #C62828; }
 
 .page-header p {
     color: #888;
@@ -919,7 +975,6 @@ const downloadInvoice = async (orderId) => {
 }
 
 .client-order-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   background-color: var(--surface);
 }

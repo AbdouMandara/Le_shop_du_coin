@@ -48,6 +48,7 @@ const router = createRouter({
         // Livreur specific routes
         { path: 'livreur', name: 'livreur', component: () => import('../views/LivreurView.vue'), meta: { auth: true, role: 'livreur' } },
         { path: 'livreur/orders', name: 'livreur-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'livreur' } },
+        { path: 'livreur/orders/:id', name: 'livreur-order-details', component: () => import('../views/LivreurOrderDetailsView.vue'), meta: { auth: true, role: 'livreur' } },
         { path: 'livreur/parameters', name: 'livreur-parameters', component: () => import('../views/ParametersView.vue'), meta: { auth: true, role: 'livreur' } },
       ]
     }
