@@ -109,6 +109,7 @@ const navItems = computed(() => {
             items.push({ label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' });
             items.push({ label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart' });
             items.push({ label: 'Commandes', path: '/client/orders', icon: 'bx bx-package' });
+            items.push({ label: 'Notifications', path: '/client/notifications', icon: 'bx bx-bell' });
             items.push({ label: 'Panier', path: '/client/cart', icon: 'bx bx-cart', id: 'cart' });
         } else if (authStore.isAdmin) {
             items.push({ label: 'Tableau de bord', path: '/admin', icon: 'bx bx-shield-quarter' });

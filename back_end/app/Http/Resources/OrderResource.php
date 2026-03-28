@@ -23,6 +23,7 @@ class OrderResource extends JsonResource
             'payment_date' => $this->payment_date,
             'user' => new UserResource($this->whenLoaded('user')),
             'product' => new ProductResource($this->whenLoaded('product')),
+            'livreur' => new UserResource($this->whenLoaded('livreur')),
             'created_at' => $this->created_at,
         ];
     }

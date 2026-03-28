@@ -15,10 +15,10 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Order::with(['user', 'product'])->latest();
+        $query = Order::with(['user', 'product', 'livreur'])->latest();
 
         if ($user->role->label === 'livreur') {
-            $query->whereIn('status', ['paid', 'delivered']);
+            $query->where('livreur_id', $user->id);
         } elseif ($user->role->label === 'client') {
             $query->where('user_id', $user->id);
         }
@@ -62,6 +62,30 @@ class OrderController extends Controller
         }
 
         $order->update($request->validated());
+
+        return new OrderResource($order);
+    }
+
+    public function assignLivreur(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if ($user->role->label !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validatedData = $request->validate([
+            'livreur_id' => 'required|exists:users,id',
+        ]);
+
+        $order->update([
+            'livreur_id' => $validatedData['livreur_id'],
+        ]);
+
+        // Create notification for the client
+        $order->user->notifications()->create([
+            'message' => 'Votre commande a été prise en compte',
+            'type' => 'info',
+        ]);
 
         return new OrderResource($order);
     }

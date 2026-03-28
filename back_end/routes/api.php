@@ -32,6 +32,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/stats', [StatsController::class, 'index']);
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
+    Route::patch('/orders/{order}/assign', [\App\Http\Controllers\Api\OrderController::class, 'assignLivreur']);
 });
 
 // Livreur routes
@@ -56,5 +57,7 @@ Route::middleware(['auth:sanctum', 'role:user'])->prefix('client')->group(functi
     Route::get('/orders/{order}/invoice', [\App\Http\Controllers\Api\OrderController::class, 'downloadInvoice']);
 
     Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
-});
 
+    Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::patch('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+});

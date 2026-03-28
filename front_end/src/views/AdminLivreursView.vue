@@ -59,11 +59,11 @@
         <form @submit.prevent="handleAddLivreur" class="modal-body">
           <div class="form-group">
             <label>Nom complet</label>
-            <input v-model="newLivreur.name" type="text" placeholder="ex: Jean Dupont" required />
+            <input v-model="newLivreur.name" type="text" placeholder="ex: Dina Moudingo" required />
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input v-model="newLivreur.email" type="email" placeholder="ex: jean@example.com" required />
+            <input v-model="newLivreur.email" type="email" placeholder="ex: dina@moudingo.com" required />
           </div>
           <div class="form-group">
             <label>Mot de passe</label>

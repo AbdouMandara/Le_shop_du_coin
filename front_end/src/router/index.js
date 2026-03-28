@@ -36,6 +36,7 @@ const router = createRouter({
         { path: 'client/favorites', name: 'favorites', component: () => import('../views/FavoritesView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/cart', name: 'cart', component: () => import('../views/CartView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/orders', name: 'client-orders', component: () => import('../views/OrdersView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client/notifications', name: 'client-notifications', component: () => import('../views/NotifUserView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/parameters', name: 'client-parameters', component: () => import('../views/ParametersView.vue'), meta: { auth: true, role: 'user' } },
         // Admin specific routes
         { path: 'admin', name: 'admin', component: () => import('../views/AdminView.vue'), meta: { auth: true, role: 'admin' } },

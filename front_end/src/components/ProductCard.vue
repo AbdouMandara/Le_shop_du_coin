@@ -93,14 +93,13 @@ const getProductImage = computed(() => {
 }
 
 .product-card:hover {
-  border-color: var(--primary);
   z-index: 2;
 }
 
 .product-card__image {
   position: relative;
   height: 200px;
-  background-color: var(--neutral);
+  /* background-color: var(--neutral); */
   overflow: hidden;
   padding: 1rem;
 }
@@ -114,8 +113,8 @@ const getProductImage = computed(() => {
 
 .product-card__favorite {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 22px;
+  right: 22px;
   background-color: #FFFFFF;
   border: 1px solid var(--border);
   width: 36px;
@@ -229,7 +228,6 @@ const getProductImage = computed(() => {
   padding: 0 0.35em;
 }
 
-
 .product-card__qty-controls button {
   background: transparent;
   border: 1px solid var(--border);
@@ -297,8 +295,4 @@ const getProductImage = computed(() => {
   opacity: 0.5;
 }
 
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
 </style>
