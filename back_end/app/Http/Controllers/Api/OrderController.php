@@ -64,6 +64,22 @@ class OrderController extends Controller
 
         $order->update($request->validated());
 
+        // Notify client about status change
+        if ($request->has('status')) {
+            $messages = [
+                'in_transit' => 'Votre commande est en cours de livraison.',
+                'delivered' => 'Votre commande a été livrée.',
+                'cancelled' => 'Votre commande a été annulée.'
+            ];
+            
+            if (isset($messages[$request->status]) && $order->user) {
+                $order->user->notifications()->create([
+                    'message' => $messages[$request->status],
+                    'type' => 'info',
+                ]);
+            }
+        }
+
         return new OrderResource($order);
     }
 

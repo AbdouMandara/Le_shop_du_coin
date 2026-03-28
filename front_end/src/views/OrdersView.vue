@@ -61,13 +61,13 @@
             </div>
             <div class="order-product">
                <div style="margin-bottom: 0.5rem">
-                   <p v-for="item in group.items" :key="item.id" style="margin: 0;font-weight: 500;">
-                     - {{ item.product?.name || 'Produit inconnu' }} ({{ item.product?.price }} FCFA)
+                   <p style="margin: 0;font-weight: 500; font-size: 0.95rem;">
+                     {{ group.items.length }} produit(s) dans cette commande
                    </p>
                </div>
                <p v-if="group.delivery">Avec livraison</p>
-               <p v-if="group.livreur" class="assigned-to">
-                  <i class='bx bx-user-check'></i> Livreur: {{ group.livreur.name }}
+               <p v-if="group.items[0]?.livreur" class="assigned-to">
+                  <i class='bx bx-user-check'></i> Assigné à: {{ group.items[0].livreur.name }}
                </p>
             </div>
           </div>
@@ -75,12 +75,20 @@
           <div class="order-card-footer">
             <div class="action-buttons">
               <button 
-                 v-if="group.delivery && authStore.isAdmin" 
+                 v-if="group.delivery && authStore.isAdmin && !['delivered', 'cancelled'].includes(group.status) && !group.livreur_id" 
                  @click="openAssignModal(group)"
                  class="btn-assign"
-                 :disabled="group.livreur_id"
               >
-                 <i class='bx bx-user-plus'></i> {{ group.livreur_id ? 'Assignée' : 'Assigner' }}
+                 <i class='bx bx-user-plus'></i> Assigner
+              </button>
+              
+              <button 
+                 @click="openDetailsModal(group)" 
+                 class="btn-secondary-minimal"
+                 title="Voir les détails"
+                 style="background-color: var(--neutral); color: var(--text); border: 1px solid var(--border); padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600;"
+              >
+                 <i class='bx bx-show'></i> Détails
               </button>
 
               <template v-if="authStore.isLivreur">
@@ -643,7 +651,7 @@ const downloadInvoice = async (orderId) => {
 
 .orders-list.admin-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .order-card {
@@ -754,21 +762,7 @@ const downloadInvoice = async (orderId) => {
     gap: 0.5rem;
 }
 
-.btn-assign:disabled {
-    background-color: var(--border);
-    color: #666;
-    cursor: not-allowed;
-}
-
-.btn-download {
-    background-color: #ff4d4d;
-}
-
-.btn-download:hover {
-    background-color: #e60000;
-}
-
-.btn-assign:hover:not(:disabled) {
+.btn-assign:hover {
     background-color: var(--secondary);
 }
 
@@ -778,11 +772,12 @@ const downloadInvoice = async (orderId) => {
 
 .assigned-to {
     color: var(--primary) !important;
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
     display: flex;
     align-items: center;
     gap: 0.2rem;
-    margin-top: 0.2rem !important;
+    margin-top: 0.5rem !important;
+    font-weight: 600;
 }
 
 /* Modal Styles */
