@@ -17,9 +17,9 @@ class OrderController extends Controller
         $user = $request->user();
         $query = Order::with(['user', 'product', 'livreur'])->latest();
 
-        if ($user->role->label === 'livreur') {
+        if (strtolower($user->role->label) === 'livreur') {
             $query->where('livreur_id', $user->id);
-        } elseif ($user->role->label === 'client') {
+        } elseif (strtolower($user->role->label) === 'user' || strtolower($user->role->label) === 'client') {
             $query->where('user_id', $user->id);
         }
 

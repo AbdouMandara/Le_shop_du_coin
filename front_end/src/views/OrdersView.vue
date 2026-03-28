@@ -114,7 +114,7 @@
           <div class="client-card-content">
             <div class="client-order-main">
               <h4 class="client-product-name">
-                Commande #{{ group.items[0]?.id.substring(0,8).toUpperCase() }}
+                Commande #{{ String(group.items[0]?.id).substring(0,8).toUpperCase() }}
               </h4>
               <p class="client-order-meta">
                  Statut : <strong style="color:var(--primary)">{{ getClientStatus(group) }}</strong>
@@ -274,31 +274,44 @@ const orderStore = useOrderStore();
 const authStore = useAuthStore();
 
 const groupedOrders = computed(() => {
-    const groups = {};
+    const groups = [];
+    
     orderStore.orders.forEach(order => {
-        const d = new Date(order.created_at);
-        const minuteKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}-${d.getMinutes()}`;
-        const groupKey = `${order.user?.id || 'guest'}_${minuteKey}_${order.delivery}`;
+        const timeString = typeof order.created_at === 'string' ? order.created_at.replace(' ', 'T') : order.created_at;
+        const orderTime = new Date(timeString).getTime();
+        const userId = order.user?.id || order.user_id || 'guest';
         
-        if (!groups[groupKey]) {
-            groups[groupKey] = {
-                id: groupKey, 
+        // Find an existing group for this user and delivery mode within a 2-minute window (120000ms)
+        let foundGroup = groups.find(g => 
+            g.user_id == userId && 
+            Boolean(g.delivery) === Boolean(order.delivery) && 
+            !isNaN(g.baseTime) && !isNaN(orderTime) &&
+            Math.abs(g.baseTime - orderTime) <= 120000
+        );
+        
+        if (!foundGroup) {
+            foundGroup = {
+                id: `group_${userId}_${orderTime}_${order.delivery}`, 
+                baseTime: orderTime,
+                user_id: userId,
                 created_at: order.created_at,
                 delivery: order.delivery,
                 status: order.status,
                 user: order.user,
                 livreur: order.livreur,
-                livreur_id: order.livreur_id,
                 items: [],
                 totalPrice: 0
             };
+            groups.push(foundGroup);
         }
-        groups[groupKey].items.push(order);
+        
+        foundGroup.items.push(order);
         if (order.product && order.product.price) {
-            groups[groupKey].totalPrice += parseFloat(order.product.price);
+            foundGroup.totalPrice += parseFloat(order.product.price);
         }
     });
-    return Object.values(groups).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    
+    return groups.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 });
 
 const filters = reactive({
