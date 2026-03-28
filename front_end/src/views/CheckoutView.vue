@@ -47,7 +47,8 @@
       <div v-if="step === 2" class="checkout-step">
         <div class="map-section">
           <h4>Sélectionnez votre lieu de livraison sur la carte :</h4>
-          <p class="map-hint">Cliquez sur la carte pour placer le repère</p>
+          <p class="map-hint">Cliquez sur la carte pour placer le repère. La boutique (Dakar) est indiquée par le repère d'origine.</p>
+          
           <div class="map-container">
             <l-map ref="map" v-model:zoom="zoom" :center="center" @click="onMapClick">
               <l-tile-layer
@@ -55,11 +56,34 @@
                 layer-type="base"
                 name="OpenStreetMap"
               ></l-tile-layer>
-              <l-marker v-if="marker" :lat-lng="marker"></l-marker>
+
+              <!-- Fixed Shop Location -->
+              <l-marker :lat-lng="shopLocation">
+                  <l-tooltip>Notre Boutique</l-tooltip>
+              </l-marker>
+
+              <!-- User Selection Location -->
+              <l-marker v-if="marker" :lat-lng="marker">
+                  <l-tooltip>Votre adresse de livraison</l-tooltip>
+              </l-marker>
+              
+              <!-- Distance Line -->
+              <l-polyline v-if="marker" :lat-lngs="[shopLocation, marker]" color="#FF5722" :weight="3" dashArray="10, 10"></l-polyline>
             </l-map>
           </div>
-          <p v-if="marker" class="coords-display">Coordonnées : {{ marker.lat.toFixed(4) }}, {{ marker.lng.toFixed(4) }}</p>
-          <p v-else class="coords-error">Veuillez sélectionner un point sur la carte.</p>
+
+          <div class="coords-info">
+            <p v-if="marker" class="coords-display">
+                <i class='bx bx-target-lock' ></i> Coordonnées : {{ marker.lat.toFixed(4) }}, {{ marker.lng.toFixed(4) }}
+            </p>
+            <p v-else class="coords-error">
+                <i class='bx bx-error-circle'></i> Veuillez sélectionner un point sur la carte.
+            </p>
+            
+            <p v-if="distanceKm" class="distance-display">
+                <i class='bx bx-map-alt' ></i> Distance estimée : <strong>{{ distanceKm }} km</strong> (en ligne droite)
+            </p>
+          </div>
         </div>
 
         <div class="step-actions mt-4">
@@ -81,14 +105,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useCartStore } from '@/stores/cart';
 import { useOrderStore } from '@/stores/orders';
 import { useRouter } from 'vue-router';
 
 // Leaflet imports
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LPolyline, LTooltip } from "@vue-leaflet/vue-leaflet";
 import L from "leaflet";
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -109,8 +133,11 @@ const loading = ref(false);
 const step = ref(1);
 const deliveryMode = ref('sans_livraison'); 
 
+// Map configuration
 const zoom = ref(13);
-const center = ref([14.6928, -17.4467]);
+// Shop location 
+const shopLocation = ref([4.038026, 9.741443]);
+const center = ref([4.038026, 9.741443]);
 const marker = ref(null);
 
 onMounted(() => {
@@ -122,6 +149,15 @@ onMounted(() => {
 const onMapClick = (e) => {
     marker.value = e.latlng;
 };
+
+// Calculate distance in KM using Leaflet's built in distanceTo
+const distanceKm = computed(() => {
+    if (!marker.value) return null;
+    const shopPoint = L.latLng(shopLocation.value[0], shopLocation.value[1]);
+    const userPoint = L.latLng(marker.value.lat, marker.value.lng);
+    const meters = shopPoint.distanceTo(userPoint);
+    return (meters / 1000).toFixed(2);
+});
 
 const goNextStep = async () => {
     if (deliveryMode.value === 'sans_livraison') {
@@ -142,7 +178,8 @@ const handleConfirm = async () => {
     loading.value = true;
     try {
         const isDelivery = deliveryMode.value === 'avec_livraison';
-        const locationStr = isDelivery ? JSON.stringify({ lat: marker.value.lat, lng: marker.value.lng }) : null;
+        // Add distance to the payload if we want, but for now just location
+        const locationStr = isDelivery ? JSON.stringify({ lat: marker.value.lat, lng: marker.value.lng, distanceKm: distanceKm.value }) : null;
 
         for (const item of cartStore.items) {
             for (let i = 0; i < item.quantity; i++) {
@@ -187,7 +224,7 @@ const handleConfirm = async () => {
 
 .checkout-container-single {
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     background-color: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -256,39 +293,60 @@ const handleConfirm = async () => {
 .map-section {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
 .map-section h4 {
     margin: 0;
+    font-size: 1.25rem;
 }
 
 .map-hint {
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-bottom: 0.5rem;
 }
 
 .map-container {
-    height: 400px;
+    height: 550px; /* Increased map size */
     width: 100%;
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
+}
+
+.coords-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: var(--neutral);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.coords-info p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.coords-info i {
+    font-size: 1.25rem;
 }
 
 .coords-display {
     color: var(--success, #4CAF50);
-    font-weight: 500;
-    margin-top: 0.5rem;
-    font-size: 0.95rem;
 }
 
 .coords-error {
     color: var(--error, #f44336);
+}
+
+.distance-display {
+    color: var(--primary);
     font-weight: 500;
-    margin-top: 0.5rem;
-    font-size: 0.95rem;
 }
 
 .step-actions {
@@ -297,7 +355,7 @@ const handleConfirm = async () => {
 }
 
 .mt-4 {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
 }
 
 .flex-1 {
@@ -309,7 +367,7 @@ const handleConfirm = async () => {
     background-color: var(--primary);
     color: #FFFFFF;
     border: none;
-    padding: 1rem;
+    padding: 1.15rem;
     border-radius: 10px;
     font-weight: 700;
     font-size: 1.1rem;
@@ -327,18 +385,19 @@ const handleConfirm = async () => {
 }
 
 .btn-secondary {
-    background-color: var(--neutral);
+    background-color: #FFFFFF;
     color: var(--text);
-    border: 1px solid var(--border);
-    padding: 1rem 1.5rem;
+    border: 2px solid var(--border);
+    padding: 1.15rem 1.5rem;
     border-radius: 10px;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: var(--border);
+    background-color: var(--neutral);
+    border-color: #ccc;
 }
 </style>
