@@ -43,6 +43,7 @@ class OrderController extends Controller
     public function store(OrderRequest $request)
     {
         $donnees_validees = $request->validated();
+        $donnees_validees['user_id'] = $request->user()->id;
         
         $order = Order::create($donnees_validees);
 
