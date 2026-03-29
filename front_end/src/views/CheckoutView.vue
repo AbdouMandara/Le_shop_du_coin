@@ -3,9 +3,11 @@
     <header class="page-header">
       <h1 v-if="step === 1">Options de Livraison</h1>
       <h1 v-else-if="step === 2">Lieu de Livraison</h1>
+      <h1 v-else-if="step === 3">Résumé de votre commande</h1>
       
       <p v-if="step === 1">Choisissez comment vous souhaitez récupérer votre commande</p>
       <p v-else-if="step === 2">Indiquez l'emplacement exact pour la livraison</p>
+      <p v-else-if="step === 3">Vérifiez les détails avant de valider</p>
     </header>
 
     <div class="checkout-container-single">
@@ -38,8 +40,7 @@
           @click="goNextStep" 
           :disabled="loading"
         >
-            <span v-if="!loading">{{ deliveryMode === 'avec_livraison' ? 'Continuer' : 'Confirmer la commande' }}</span>
-            <i v-else class='bx bx-loader-alt bx-spin'></i>
+            <span>Continuer</span>
         </button>
       </div>
 
@@ -91,10 +92,67 @@
           
           <button 
             class="btn-checkout flex-1" 
-            @click="handleConfirm" 
+            @click="step = 3" 
             :disabled="loading || !marker"
           >
-              <span v-if="!loading">Confirmer la commande</span>
+              <span>Continuer vers le résumé</span>
+          </button>
+        </div>
+      </div>
+ 
+      <!-- STEP 3: Résumé final -->
+      <div v-if="step === 3" class="checkout-step">
+        <div class="summary-details">
+            <div class="summary-section">
+                <h4><i class='bx bx-shopping-bag'></i> Articles</h4>
+                <div class="summary-items">
+                    <div v-for="item in cartStore.items" :key="item.id" class="summary-item">
+                        <span class="item-qty">{{ item.quantity }}x</span>
+                        <span class="item-name">{{ item.name }}</span>
+                        <span class="item-total">{{ item.price * item.quantity }} FCFA</span>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="summary-section">
+                <h4><i class='bx bx-map-pin'></i> Récupération</h4>
+                <p v-if="deliveryMode === 'sans_livraison'">
+                    <i class='bx bx-store-alt'></i> Retrait en magasin (Gratuit)
+                </p>
+                <div v-else>
+                    <p><i class='bx bx-car'></i> Livraison à domicile</p>
+                    <small v-if="marker" class="text-muted">
+                        Distance : {{ distanceKm }} km ({{ marker.lat.toFixed(4) }}, {{ marker.lng.toFixed(4) }})
+                    </small>
+                </div>
+            </div>
+ 
+            <div class="summary-total-box">
+                <div class="total-row">
+                    <span>Sous-total</span>
+                    <span>{{ cartStore.totalPrice }} FCFA</span>
+                </div>
+                <div class="total-row">
+                    <span>Frais de livraison</span>
+                    <span>Gratuit</span>
+                </div>
+                <hr>
+                <div class="total-row grand-total">
+                    <span>TOTAL À PAYER</span>
+                    <span>{{ cartStore.totalPrice }} FCFA</span>
+                </div>
+            </div>
+        </div>
+ 
+        <div class="step-actions mt-4">
+          <button class="btn-secondary" @click="deliveryMode === 'avec_livraison' ? step = 2 : step = 1" :disabled="loading">Retour</button>
+          
+          <button 
+            class="btn-checkout flex-1 btn-validate" 
+            @click="handleConfirm" 
+            :disabled="loading"
+          >
+              <span v-if="!loading">Valider et commander</span>
               <i v-else class='bx bx-loader-alt bx-spin'></i>
           </button>
         </div>
@@ -161,10 +219,8 @@ const distanceKm = computed(() => {
 
 const goNextStep = async () => {
     if (deliveryMode.value === 'sans_livraison') {
-        // Direct checkout
-        await handleConfirm();
+        step.value = 3;
     } else {
-        // Go to map
         step.value = 2;
     }
 };
@@ -236,12 +292,6 @@ const handleConfirm = async () => {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .delivery-choices {
@@ -308,7 +358,7 @@ const handleConfirm = async () => {
 }
 
 .map-container {
-    height: 550px; /* Increased map size */
+    height: 550px;
     width: 100%;
     border-radius: 12px;
     overflow: hidden;
@@ -399,5 +449,76 @@ const handleConfirm = async () => {
 .btn-secondary:hover:not(:disabled) {
     background-color: var(--neutral);
     border-color: #ccc;
+}
+ 
+/* Summary Styles */
+.summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+ 
+.summary-section {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+ 
+.summary-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+    color: var(--primary);
+}
+ 
+.summary-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+ 
+.summary-item {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 1rem;
+    font-size: 1.05rem;
+}
+ 
+.item-qty {
+    font-weight: bold;
+    color: var(--secondary);
+}
+ 
+.item-total {
+    font-weight: 600;
+}
+ 
+.summary-total-box {
+    background-color: var(--neutral);
+    padding: 2rem;
+    border-radius: 12px;
+}
+ 
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+ 
+.grand-total {
+    margin-top: 1rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+ 
+.btn-validate {
+    background-color: #4CAF50 !important;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+ 
+.text-muted {
+    color: #888;
 }
 </style>

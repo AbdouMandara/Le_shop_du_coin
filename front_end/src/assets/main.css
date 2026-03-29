@@ -19,12 +19,9 @@
   --border: #333333;
 }
 
-body {
+* {
   font-family: 'Cabin', sans-serif;
-  background-color: var(--background);
-  color: var(--text);
-  margin: 0;
-  transition: background-color 0.3s, color 0.3s;
+  box-sizing: border-box;
 }
 
 a {
@@ -32,8 +29,11 @@ a {
   color: inherit;
 }
 
-* {
-  box-sizing: border-box;
+body {
+  background-color: var(--background);
+  color: var(--text);
+  margin: 0;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .main-container {

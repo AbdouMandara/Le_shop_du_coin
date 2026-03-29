@@ -1,8 +1,13 @@
 <template>
   <div class="cart-page">
     <header class="page-header">
+      <div class="header-left">
         <h1>Mon Panier</h1>
         <p>{{ cartStore.itemCount }} article(s) dans votre panier</p>
+      </div>
+      <router-link v-if="cartStore.items.length > 0" to="/client/checkout" class="btn-checkout-header">
+        Continuer vers le paiement <i class='bx bx-right-arrow-alt'></i>
+      </router-link>
     </header>
 
     <div v-if="cartStore.items.length === 0" class="empty">
@@ -27,60 +32,14 @@
                 </button>
             </div>
         </div>
-
-        <div class="cart-summary">
-            <h3>Résumé</h3>
-            <div class="summary-row">
-                <span>Sous-total</span>
-                <span>{{ cartStore.totalPrice }} FCFA</span>
-            </div>
-            <hr />
-            <div class="summary-row total">
-                <span>Total</span>
-                <span>{{ cartStore.totalPrice }} FCFA</span>
-            </div>
-            <router-link to="/client/checkout" class="btn-checkout" style="display: block; text-align: center; text-decoration: none;">
-                Continuer vers le paiement
-            </router-link>
-        </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import { useCartStore } from '@/stores/cart';
-import { useOrderStore } from '@/stores/orders';
-import { useRouter } from 'vue-router';
 
 const cartStore = useCartStore();
-const orderStore = useOrderStore();
-const router = useRouter();
-const loading = ref(false);
-
-const updateQty = (item, diff) => {
-    item.quantity += diff;
-    cartStore.saveCart();
-};
-
-const handleCheckout = async () => {
-    loading.value = true;
-    try {
-        for (const item of cartStore.items) {
-            for (let i = 0; i < item.quantity; i++) {
-                await orderStore.placeOrder(item.id);
-            }
-        }
-        cartStore.items = [];
-        cartStore.saveCart();
-        router.push({ name: 'client-orders' }); // Redirect to orders to see status
-    } catch (err) {
-        console.error('Checkout error:', err.response?.data || err);
-        alert('Erreur lors de la commande: ' + (err.response?.data?.message || err.message));
-    } finally {
-        loading.value = false;
-    }
-};
 </script>
 
 <style scoped>
@@ -91,19 +50,37 @@ const handleCheckout = async () => {
     gap: 3rem;
 }
 
-.page-header h1 {
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+}
+
+.header-left h1 {
     margin: 0;
     font-size: 2rem;
 }
 
-.page-header p {
+.header-left p {
     color: #888;
+    margin: 0.5rem 0 0;
+}
+
+.btn-checkout-header {
+    background-color: var(--primary);
+    color: #FFFFFF;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .cart-container {
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 3rem;
+    width: 100%;
 }
 
 .cart-items {
@@ -149,16 +126,8 @@ const handleCheckout = async () => {
     align-items: center;
     gap: 1rem;
     background-color: var(--neutral);
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
     border-radius: 8px;
-}
-
-.cart-item__quantity button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.25rem;
-    padding: 0 0.5rem;
 }
 
 .cart-item__remove {
@@ -170,58 +139,28 @@ const handleCheckout = async () => {
     padding: 0.5rem;
 }
 
-.cart-summary {
-    background-color: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    height: fit-content;
-    position: sticky;
-    top: 2rem;
-}
-
-.cart-summary h3 {
-    margin-top: 0;
-    margin-bottom: 2rem;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    color: #666;
-}
-
-.summary-row.total {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-top: 1.5rem;
-}
-
-.free {
-    color: #4CAF50;
-    font-weight: 600;
-}
-
-.btn-checkout {
-    width: 100%;
-    margin-top: 2rem;
-    background-color: var(--primary);
-    color: #FFFFFF;
-    border: none;
-    padding: 1rem;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
 .empty {
     text-align: center;
     padding: 6rem;
     background-color: var(--surface);
     border: 1px dashed var(--border);
     border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.empty i {
+    font-size: 4rem;
+    color: var(--border);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
 }
 </style>

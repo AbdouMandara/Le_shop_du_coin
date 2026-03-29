@@ -6,7 +6,7 @@
         <span class="header-title">Le shop du coin</span>
       </div>
       <div class="header-actions">
-        <button class="header-theme-toggle" @click="themeStore.toggleTheme" title="Changer de thème">
+        <button v-if="!authStore.isUser" class="header-theme-toggle" @click="themeStore.toggleTheme" title="Changer de thème">
           <i :class="themeStore.dark ? 'bx bx-sun' : 'bx bx-moon'"></i>
         </button>
         
@@ -47,8 +47,12 @@
 
             <div v-if="showUserMenu" class="user-dropdown-menu">
               <button class="dropdown-item" @click="handleEditParams">
-                <i class='bx bx-edit-alt'></i> Modifier les paramètres
+                <i class='bx bx-user-circle'></i> Mon Profil
               </button>
+              <button class="dropdown-item" @click="themeStore.toggleTheme">
+                <i :class="themeStore.dark ? 'bx bx-sun' : 'bx bx-moon'"></i> Mode {{ themeStore.dark ? 'Clair' : 'Sombre' }}
+              </button>
+              <hr class="dropdown-divider">
               <button class="dropdown-item logout-btn" @click="handleLogout">
                 <i class='bx bx-log-out'></i> Déconnexion
               </button>
@@ -373,6 +377,13 @@ onUnmounted(() => {
 .logout-btn:hover {
   background-color: #ff4d4d !important;
   color: white !important;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border);
+  margin: 0.5rem 0;
+  border: none;
 }
 
 .main-layout {
