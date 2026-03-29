@@ -456,11 +456,8 @@ const confirmAssignment = async () => {
 
 const updateGroupStatus = async (group, status) => {
     try {
-        const prefix = authStore.isLivreur ? '/livreur' : '/admin';
-        await Promise.all(group.items.map(o => 
-            api.patch(`${prefix}/orders/${o.id}`, { status })
-        ));
-        await orderStore.fetchOrders(filters);
+        const ids = group.items.map(o => o.id);
+        await orderStore.updateOrdersStatusBulk(ids, status);
     } catch (err) {
         alert("Erreur lors de la mise à jour du statut");
     }

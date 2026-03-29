@@ -172,10 +172,9 @@ const handleStatusUpdate = async (newStatus) => {
     if (updating.value) return;
     updating.value = true;
     try {
-        // Update all related items in bulk
-        await Promise.all(relatedItems.value.map(o => 
-            orderStore.updateOrderStatus(o.id, newStatus)
-        ));
+        // Update all related items in bulk (single request, single notification)
+        const ids = relatedItems.value.map(o => o.id);
+        await orderStore.updateOrdersStatusBulk(ids, newStatus);
         
         // Refresh local data
         const fresh = orderStore.orders.find(o => o.id === orderId.value);

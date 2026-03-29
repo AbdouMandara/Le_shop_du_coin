@@ -34,6 +34,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::apiResource('categories', CategoryController::class);
     Route::get('/stats', [StatsController::class, 'index']);
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
+    Route::patch('/orders/bulk-status-update', [\App\Http\Controllers\Api\OrderController::class, 'bulkStatusUpdate']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
     Route::patch('/orders/{order}/assign', [\App\Http\Controllers\Api\OrderController::class, 'assignLivreur']);
 });
@@ -43,6 +44,7 @@ Route::middleware(['auth:sanctum', 'role:livreur'])->prefix('livreur')->group(fu
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{product}', [ProductController::class, 'show']);
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
+    Route::patch('/orders/bulk-status-update', [\App\Http\Controllers\Api\OrderController::class, 'bulkStatusUpdate']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
 });
 

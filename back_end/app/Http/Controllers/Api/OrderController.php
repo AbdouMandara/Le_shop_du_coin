@@ -91,6 +91,53 @@ class OrderController extends Controller
         return new OrderResource($order);
     }
 
+    public function bulkStatusUpdate(Request $request)
+    {
+        $user = $request->user();
+        if (!in_array($user->role->label, ['admin', 'livreur'])) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validatedData = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:orders,id',
+            'status' => 'required|string',
+        ]);
+
+        $status = $validatedData['status'];
+        $ids = $validatedData['ids'];
+
+        // Get orders with users to notify
+        $orders = Order::whereIn('id', $ids)->with('user')->get();
+        
+        // Update all statuses
+        Order::whereIn('id', $ids)->update(['status' => $status]);
+
+        // Notifications
+        $messages = [
+            'in_transit' => 'Votre commande est en cours de livraison.',
+            'delivered' => 'Votre commande a été livrée.',
+            'cancelled' => 'Votre commande a été annulée.'
+        ];
+
+        if (isset($messages[$status])) {
+            // Group by user_id to send only ONE notification per client
+            $userIds = $orders->pluck('user_id')->unique();
+            
+            foreach ($userIds as $userId) {
+                if ($userId) {
+                    \App\Models\Notification::create([
+                        'user_id' => $userId,
+                        'message' => $messages[$status],
+                        'type' => 'info',
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Statuts mis à jour avec succès.', 'updated_count' => count($ids)]);
+    }
+
     public function assignLivreur(Request $request, Order $order)
     {
         $user = $request->user();

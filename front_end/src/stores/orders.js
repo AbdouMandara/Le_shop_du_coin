@@ -41,6 +41,11 @@ export const useOrderStore = defineStore('orders', {
             const prefix = this.getPrefix();
             await api.patch(`${prefix}/orders/${orderId}`, { status });
             await this.fetchOrders();
+        },
+        async updateOrdersStatusBulk(ids, status) {
+            const prefix = this.getPrefix();
+            await api.patch(`${prefix}/orders/bulk-status-update`, { ids, status });
+            await this.fetchOrders();
         }
     }
 });

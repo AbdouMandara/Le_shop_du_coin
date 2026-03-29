@@ -1,8 +1,42 @@
 <template>
   <div class="livreur-page">
     <header class="page-header">
-      <h1>Espace Livreur</h1>
-      <p>Gérez les livraisons en cours.</p>
+      <div class="header-main">
+          <h1>Espace Livreur</h1>
+          <p>Gérez les livraisons en cours.</p>
+      </div>
+
+      <div class="filter-section">
+          <div class="filter-dropdown-wrapper" ref="filterMenuRef">
+              <button class="action-btn" @click.stop="showFilterModal = !showFilterModal">
+                  <i class='bx bx-filter-alt'></i> Filtres
+                  <span v-if="selectedStatus" class="filter-badge">1</span>
+              </button>
+              
+              <div v-if="showFilterModal" class="filter-dropdown" @click.stop>
+                  <div class="filter-dropdown-header">
+                      <h3>Filtres détaillés</h3>
+                  </div>
+                  
+                  <div class="filter-dropdown-body">
+                      <div class="filter-group">
+                          <label>Statut de livraison</label>
+                          <select :value="selectedStatus" @change="setStatus($event.target.value)" class="filter-input">
+                              <option v-for="tab in tabs" :key="tab.value" :value="tab.value">
+                                  {{ tab.label }}
+                              </option>
+                          </select>
+                      </div>
+                  </div>
+
+                  <div class="filter-dropdown-footer" v-if="selectedStatus">
+                      <button @click="resetFilters" class="btn-reset-filters">
+                          <i class='bx bx-refresh'></i> Réinitialiser
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
     </header>
 
     <div class="orders-list">
@@ -29,11 +63,39 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted, onUnmounted, computed, ref } from 'vue';
 import { useOrderStore } from '@/stores/orders';
 
-
 const orderStore = useOrderStore();
+const selectedStatus = ref('');
+const showFilterModal = ref(false);
+const filterMenuRef = ref(null);
+
+const tabs = [
+    { label: 'Tous les statuts', value: '' },
+    { label: 'À livrer (Payée)', value: 'paid' },
+    { label: 'En cours de livraison', value: 'in_transit' },
+    { label: 'Livrée (Terminée)', value: 'delivered' },
+];
+
+const setStatus = (status) => {
+    selectedStatus.value = status;
+    orderStore.fetchOrders({ status: selectedStatus.value });
+    // Optionnel : fermer le menu après sélection
+    // showFilterModal.value = false;
+};
+
+const resetFilters = () => {
+    selectedStatus.value = '';
+    orderStore.fetchOrders();
+    showFilterModal.value = false;
+};
+
+const closeFilterMenu = (e) => {
+    if (filterMenuRef.value && !filterMenuRef.value.contains(e.target)) {
+        showFilterModal.value = false;
+    }
+};
 
 const groupedOrders = computed(() => {
     const groups = [];
@@ -88,12 +150,139 @@ const formatStatus = (status) => {
 
 onMounted(() => {
     orderStore.fetchOrders();
+    document.addEventListener('click', closeFilterMenu);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', closeFilterMenu);
 });
 </script>
 
 <style scoped>
 .livreur-page {
     padding: 2rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-dropdown-wrapper {
+    position: relative;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: 'Cal Sans', sans-serif;
+}
+
+.action-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-badge {
+    background-color: var(--primary);
+    color: white;
+    font-size: 0.7rem;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 280px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    z-index: 100;
+}
+
+.filter-dropdown-header {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-dropdown-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: 'Cal Sans', sans-serif;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #888;
+}
+
+.filter-input {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--text);
+    font-size: 0.95rem;
+    width: 100%;
+    outline: none;
+}
+
+.filter-dropdown-footer {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.btn-reset-filters {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    background: none;
+    color: var(--primary);
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    border-radius: 8px;
+}
+
+.btn-reset-filters:hover {
+    background-color: var(--neutral);
 }
 
 .orders-list {
