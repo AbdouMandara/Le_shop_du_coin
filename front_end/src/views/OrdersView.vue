@@ -299,6 +299,7 @@ const groupedOrders = computed(() => {
                 status: order.status,
                 user: order.user,
                 livreur: order.livreur,
+                livreur_id: order.livreur_id,
                 items: [],
                 totalPrice: 0
             };
@@ -306,6 +307,10 @@ const groupedOrders = computed(() => {
         }
         
         foundGroup.items.push(order);
+        if (order.livreur_id && !foundGroup.livreur_id) {
+            foundGroup.livreur_id = order.livreur_id;
+            foundGroup.livreur = order.livreur;
+        }
         if (order.product && order.product.price) {
             foundGroup.totalPrice += parseFloat(order.product.price);
         }
