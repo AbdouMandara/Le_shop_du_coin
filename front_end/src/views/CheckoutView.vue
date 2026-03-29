@@ -134,12 +134,14 @@
                 </div>
                 <div class="total-row">
                     <span>Frais de livraison</span>
-                    <span>Gratuit</span>
+                    <span :class="{ 'free': deliveryFee === 0 }">
+                        {{ deliveryFee > 0 ? deliveryFee + ' FCFA' : 'Gratuit' }}
+                    </span>
                 </div>
                 <hr>
                 <div class="total-row grand-total">
                     <span>TOTAL À PAYER</span>
-                    <span>{{ cartStore.totalPrice }} FCFA</span>
+                    <span>{{ totalToPay }} FCFA</span>
                 </div>
             </div>
         </div>
@@ -217,6 +219,18 @@ const distanceKm = computed(() => {
     return (meters / 1000).toFixed(2);
 });
 
+const deliveryFee = computed(() => {
+    if (deliveryMode.value === 'sans_livraison') return 0;
+    if (distanceKm.value && parseFloat(distanceKm.value) >= 1) {
+        return 450;
+    }
+    return 0;
+});
+
+const totalToPay = computed(() => {
+    return cartStore.totalPrice + deliveryFee.value;
+});
+
 const goNextStep = async () => {
     if (deliveryMode.value === 'sans_livraison') {
         step.value = 3;
@@ -235,7 +249,12 @@ const handleConfirm = async () => {
     try {
         const isDelivery = deliveryMode.value === 'avec_livraison';
         // Add distance to the payload if we want, but for now just location
-        const locationStr = isDelivery ? JSON.stringify({ lat: marker.value.lat, lng: marker.value.lng, distanceKm: distanceKm.value }) : null;
+        const locationStr = isDelivery ? JSON.stringify({ 
+            lat: marker.value.lat, 
+            lng: marker.value.lng, 
+            distanceKm: distanceKm.value,
+            deliveryFee: deliveryFee.value 
+        }) : null;
 
         for (const item of cartStore.items) {
             for (let i = 0; i < item.quantity; i++) {
