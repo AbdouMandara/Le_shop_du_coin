@@ -17,11 +17,11 @@
             </div>
             <div class="order-body">
                 <p><strong>Client:</strong> {{ group.user?.name }}</p>
-                <div style="margin-top: 0.5rem">
+                <!-- <div style="margin-top: 0.5rem">
                     <p v-for="item in group.items" :key="item.id" style="margin: 0; font-weight: 500;">
                         - {{ item.product?.name || 'Produit inconnu' }} ({{ item.product?.price }} FCFA)
                     </p>
-                </div>
+                </div> -->
             </div>
             <div class="order-actions">
                 <button @click="$router.push({ name: 'livreur-order-details', params: { id: group.items[0]?.id } })" class="btn-secondary" style="margin-bottom: 0.5rem; width: 100%">

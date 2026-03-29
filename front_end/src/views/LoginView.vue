@@ -2,7 +2,6 @@
   <div class="login-page">
     <div class="login-card">
       <div class="login-header">
-        <i class='bx bxs-shopping-bag login-logo'></i>
         <h1>Connexion</h1>
         <p>Accédez à votre espace E-Shop</p>
       </div>

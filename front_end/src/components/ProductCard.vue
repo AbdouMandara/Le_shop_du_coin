@@ -191,7 +191,7 @@ const getProductImage = computed(() => {
 }
 
 .product-card__add-btn {
-  background-color: var(--primary);
+  background-color: var(--secondary);
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -204,7 +204,8 @@ const getProductImage = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 15px rgba(26, 26, 46, 0.1);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
+  transition: all 0.3s ease;
 }
 
 .product-card__add-btn i {
@@ -212,7 +213,8 @@ const getProductImage = computed(() => {
 }
 
 .product-card__add-btn:hover {
-  background-color: var(--secondary);
+  filter: brightness(0.9);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
 }
 
 .product-card__qty-controls {

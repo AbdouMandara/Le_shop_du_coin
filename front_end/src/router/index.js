@@ -31,7 +31,7 @@ const router = createRouter({
           component: () => import('../views/ProductsView.vue')
         },
         // Client specific routes
-        { path: 'client', name: 'client-home', component: () => import('../views/HomeView.vue'), meta: { auth: true, role: 'user' } },
+        { path: 'client', name: 'client-home', component: () => import('../views/ProductsView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/products', name: 'client-products', component: () => import('../views/ProductsView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/favorites', name: 'favorites', component: () => import('../views/FavoritesView.vue'), meta: { auth: true, role: 'user' } },
         { path: 'client/cart', name: 'cart', component: () => import('../views/CartView.vue'), meta: { auth: true, role: 'user' } },

@@ -38,30 +38,45 @@
 
     <!-- PRODUCTS SECTION -->
     <section class="products-section">
-      <div class="section-header">
-        <h2 class="section-title">En Tendance</h2>
-        <router-link :to="productsUrl" class="link-more">Voir toute la boutique <i class='bx bx-right-arrow-alt'></i></router-link>
-      </div>
-      
-      <div v-if="productStore.loading" class="loading-state">
-         <i class='bx bx-loader-alt bx-spin'></i> Chargement de nos collections...
-      </div>
-      <div v-else class="products-grid">
-         <ProductCard 
-            v-for="product in productStore.products.slice(0, 4)" 
-            :key="product.id" 
-            :product="product"
-         />
-      </div>
-      <div v-if="!productStore.loading && productStore.products.length === 0" class="empty-state">
-         Notre collection est en cours de renouvellement. Revenez très vite !
+      <div class="products-section-container">
+        <div class="section-header">
+          <h2 class="section-title">En Tendance</h2>
+          <router-link :to="productsUrl" class="link-more">Voir toute la boutique <i class='bx bx-right-arrow-alt'></i></router-link>
+        </div>
+        
+        <div v-if="productStore.loading" class="loading-state">
+           <i class='bx bx-loader-alt bx-spin'></i> Chargement de nos collections...
+        </div>
+        <div v-else class="carousel-container">
+           <div class="carousel-viewport">
+              <div class="carousel-track" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
+                 <div class="carousel-page" v-for="pageIndex in slideCount" :key="pageIndex">
+                    <ProductCard 
+                       v-for="product in featuredProducts.slice((pageIndex - 1) * itemsPerPage, pageIndex * itemsPerPage)" 
+                       :key="product.id" 
+                       :product="product"
+                    />
+                 </div>
+              </div>
+           </div>
+           <div class="carousel-controls" v-if="slideCount > 1">
+              <button @click="prevSlide" :disabled="currentSlide === 0" class="carousel-btn"><i class='bx bx-chevron-left'></i></button>
+              <div class="carousel-dots">
+                 <span v-for="n in slideCount" :key="n" class="dot" :class="{ active: currentSlide === n - 1 }" @click="goToSlide(n - 1)"></span>
+              </div>
+              <button @click="nextSlide" :disabled="currentSlide >= slideCount - 1" class="carousel-btn"><i class='bx bx-chevron-right'></i></button>
+           </div>
+        </div>
+        <div v-if="!productStore.loading && productStore.products.length === 0" class="empty-state">
+           Notre collection est en cours de renouvellement. Revenez très vite !
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useProductStore } from '@/stores/products';
 import { useAuthStore } from '@/stores/auth';
 import ProductCard from '@/components/ProductCard.vue';
@@ -78,8 +93,50 @@ const productsUrl = computed(() => {
     return '/products';
 });
 
+// Carousel logic
+const itemsPerPage = ref(4);
+const currentSlide = ref(0);
+
+const updateItemsPerPage = () => {
+    if (window.innerWidth < 768) itemsPerPage.value = 1;
+    else if (window.innerWidth < 1024) itemsPerPage.value = 2;
+    else if (window.innerWidth < 1400) itemsPerPage.value = 3;
+    else itemsPerPage.value = 4;
+};
+
+watch(itemsPerPage, () => {
+    currentSlide.value = 0;
+});
+
+const featuredProducts = computed(() => {
+    return productStore.products.slice(0, 6) || [];
+});
+
+const slideCount = computed(() => {
+    if (featuredProducts.value.length === 0) return 0;
+    return Math.ceil(featuredProducts.value.length / itemsPerPage.value);
+});
+
+const prevSlide = () => {
+    if (currentSlide.value > 0) currentSlide.value--;
+};
+
+const nextSlide = () => {
+    if (currentSlide.value < slideCount.value - 1) currentSlide.value++;
+};
+
+const goToSlide = (index) => {
+    currentSlide.value = index;
+};
+
 onMounted(() => {
     productStore.fetchProducts();
+    updateItemsPerPage();
+    window.addEventListener('resize', updateItemsPerPage);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateItemsPerPage);
 });
 </script>
 
@@ -87,10 +144,8 @@ onMounted(() => {
 .home-view {
   display: flex;
   flex-direction: column;
-  gap: 4rem;
-  padding: 2rem 2.5rem 6rem;
-  max-width: 1300px;
-  margin: 0 auto;
+  gap: 5rem;
+  padding-bottom: 6rem;
 }
 
 /* HERO SECTION */
@@ -100,11 +155,28 @@ onMounted(() => {
   justify-content: center;
   text-align: center;
   padding: 8rem 2rem;
-  background-color: var(--neutral);
-  border-radius: 32px;
-  border: 1px solid var(--border);
+  background-color: var(--primary);
+  min-height: calc(100vh - 60px);
+  width: 100%;
+}
+
+.features-section {
+  padding: 0 2.5rem;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.products-section {
+  background-color: var(--primary);
+  padding: 6rem 2.5rem;
+  width: 100%;
   position: relative;
-  overflow: hidden;
+}
+
+.products-section-container {
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
 .hero-content {
@@ -117,14 +189,14 @@ onMounted(() => {
   font-size: 4.5rem;
   font-weight: 800;
   line-height: 1.1;
-  color: var(--text);
+  color: #FFFFFF;
   margin-bottom: 2rem;
   letter-spacing: -0.04em;
 }
 
 .hero-subtitle {
   font-size: 1.25rem;
-  color: #666;
+  color: #EEEEEE;
   margin-bottom: 3rem;
   line-height: 1.7;
   max-width: 600px;
@@ -133,7 +205,7 @@ onMounted(() => {
 }
 
 [data-theme='dark'] .hero-subtitle {
-  color: #AAA;
+  color: #DDDDDD;
 }
 
 .hero-actions {
@@ -143,7 +215,7 @@ onMounted(() => {
 }
 
 .btn-cta {
-  background-color: var(--primary);
+  background-color: var(--secondary);
   color: #FFFFFF;
   padding: 1.1rem 2.5rem;
   border-radius: 50px;
@@ -229,7 +301,7 @@ onMounted(() => {
 .section-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--text);
+  color: #FFFFFF;
   margin: 0;
   letter-spacing: -0.03em;
 }
@@ -238,11 +310,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--primary);
+  color: #FFFFFF;
   font-weight: 600;
   font-size: 1.05rem;
   transition: gap 0.2s, opacity 0.2s;
   padding-bottom: 0.5rem;
+  opacity: 0.9;
 }
 
 .link-more:hover {
@@ -250,10 +323,100 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-.products-grid {
+/* CAROUSEL */
+.carousel-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.carousel-page {
+  flex: 0 0 100%;
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 2.5rem;
+  padding: 0.5rem 0; /* Ensures box shadows aren't clipped */
+}
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+.carousel-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #FFFFFF;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+.carousel-btn:hover:not(:disabled) {
+  background-color: #FFFFFF;
+  color: var(--secondary);
+  border-color: #FFFFFF;
+}
+.carousel-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+.carousel-dots {
+  display: flex;
+  gap: 0.6rem;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dot.active {
+  background-color: #FFFFFF;
+  transform: scale(1.3);
+}
+
+/* Glassmorphism Product Card Override for this section */
+:deep(.products-section .product-card) {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+:deep(.products-section .product-card:hover) {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.products-section .product-card__content) {
+  background-color: transparent;
+}
+
+@media (max-width: 1400px) {
+  .carousel-page { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1024px) {
+  .carousel-page { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .carousel-page { grid-template-columns: repeat(1, 1fr); }
 }
 
 .loading-state, .empty-state {

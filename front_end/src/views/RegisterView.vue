@@ -2,9 +2,8 @@
   <div class="register-page">
     <div class="register-card">
       <div class="register-header">
-        <i class='bx bxs-user-plus register-logo'></i>
-        <h1>Création de compte</h1>
-        <p>Rejoignez la communauté E-Shop</p>
+        <h1>Inscription</h1>
+        <p>Rejoignez la communauté CTEC Shop</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="register-form">
