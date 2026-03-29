@@ -1,9 +1,36 @@
 <template>
   <div class="livreur-details-page">
     <header class="page-header">
-      <button class="btn-back" @click="$router.back()">
-          <i class='bx bx-arrow-back'></i> Retour
-      </button>
+      <div class="header-top-row">
+          <button class="btn-back" @click="$router.back()">
+              <i class='bx bx-arrow-back'></i> Retour
+          </button>
+          
+          <!-- DYNAMIC ACTION BUTTON -->
+          <div v-if="selectedOrder && !loading" class="header-action-wrapper">
+              <button 
+                v-if="['paid', 'pending'].includes(selectedOrder.status)" 
+                @click="handleStatusUpdate('in_transit')"
+                class="btn-action btn-start"
+                :disabled="updating"
+              >
+                  {{ updating ? 'Chargement...' : 'Démarrer la livraison' }}
+              </button>
+              
+              <button 
+                v-else-if="selectedOrder.status === 'in_transit'" 
+                @click="handleStatusUpdate('delivered')"
+                class="btn-action btn-complete"
+                :disabled="updating"
+              >
+                  {{ updating ? 'Chargement...' : 'Commande livrée' }}
+              </button>
+              
+              <div v-else-if="selectedOrder.status === 'delivered'" class="delivery-complete-badge">
+                  <i class='bx bxs-check-circle'></i> Cette commande a été livrée
+              </div>
+          </div>
+      </div>
       <h1>Détails de la Commande #{{ orderId?.substring(0,8) }}</h1>
       <p>Visualisez les informations du client et son lieu de livraison.</p>
     </header>
@@ -85,6 +112,7 @@ const route = useRoute();
 const orderStore = useOrderStore();
 
 const loading = ref(true);
+const updating = ref(false);
 const selectedOrder = ref(null);
 const orderId = ref(route.params.id);
 
@@ -111,6 +139,20 @@ const deliveryLocation = computed(() => {
     }
 });
 
+// Group related items for bulk status update
+const relatedItems = computed(() => {
+    if (!selectedOrder.value) return [];
+    
+    const baseOrder = selectedOrder.value;
+    const baseTime = new Date(baseOrder.created_at.replace(' ', 'T')).getTime();
+    
+    return orderStore.orders.filter(o => 
+        o.user_id == baseOrder.user_id &&
+        Boolean(o.delivery) === Boolean(baseOrder.delivery) &&
+        Math.abs(new Date(o.created_at.replace(' ', 'T')).getTime() - baseTime) <= 120000
+    );
+});
+
 onMounted(async () => {
     loading.value = true;
     if (orderStore.orders.length === 0) {
@@ -126,12 +168,22 @@ onMounted(async () => {
     loading.value = false;
 });
 
-const updateStatus = async (id, status) => {
-    await orderStore.updateOrderStatus(id, status);
-    // Rafraichir l'objet dans la vue
-    const fresh = orderStore.orders.find(o => o.id === orderId.value);
-    if (fresh) {
-        selectedOrder.value = fresh;
+const handleStatusUpdate = async (newStatus) => {
+    if (updating.value) return;
+    updating.value = true;
+    try {
+        // Update all related items in bulk
+        await Promise.all(relatedItems.value.map(o => 
+            orderStore.updateOrderStatus(o.id, newStatus)
+        ));
+        
+        // Refresh local data
+        const fresh = orderStore.orders.find(o => o.id === orderId.value);
+        if (fresh) {
+            selectedOrder.value = fresh;
+        }
+    } finally {
+        updating.value = false;
     }
 };
 
@@ -177,6 +229,60 @@ const formatStatus = (status) => {
 }
 
 .btn-back i {
+    font-size: 1.2rem;
+}
+
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.btn-action {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-start {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-complete {
+    background-color: #2E7D32;
+    color: white;
+}
+
+.btn-action:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.btn-action:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.delivery-complete-badge {
+    background-color: rgba(46, 125, 50, 0.1);
+    color: #2E7D32;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(46, 125, 50, 0.3);
+}
+
+.delivery-complete-badge i {
     font-size: 1.2rem;
 }
 

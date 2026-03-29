@@ -17,28 +17,11 @@
             </div>
             <div class="order-body">
                 <p><strong>Client:</strong> {{ group.user?.name }}</p>
-                <!-- <div style="margin-top: 0.5rem">
-                    <p v-for="item in group.items" :key="item.id" style="margin: 0; font-weight: 500;">
-                        - {{ item.product?.name || 'Produit inconnu' }} ({{ item.product?.price }} FCFA)
-                    </p>
-                </div> -->
             </div>
             <div class="order-actions">
-                <button @click="$router.push({ name: 'livreur-order-details', params: { id: group.items[0]?.id } })" class="btn-secondary" style="margin-bottom: 0.5rem; width: 100%">
+                <button @click="$router.push({ name: 'livreur-order-details', params: { id: group.items[0]?.id } })" class="btn-secondary" style="width: 100%">
                     <i class='bx bx-show'></i> Voir les détails
                 </button>
-                <template v-if="group.status !== 'delivered' && group.status !== 'cancelled'">
-                    <select :value="group.status" @change="updateStatusGroup(group, $event.target.value)" class="status-select">
-                        <option value="paid" :disabled="group.status !== 'paid'">Nouvelle (Payée)</option>
-                        <option value="in_transit" :disabled="group.status === 'in_transit' || group.status === 'delivered'">En cours de livraison</option>
-                        <option value="delivered">Livrée (Terminé)</option>
-                    </select>
-                </template>
-                <template v-else-if="group.status === 'delivered'">
-                    <div class="locked-status">
-                        <i class='bx bx-check-shield'></i> Commande Livrée
-                    </div>
-                </template>
             </div>
         </div>
     </div>
@@ -48,7 +31,7 @@
 <script setup>
 import { onMounted, computed } from 'vue';
 import { useOrderStore } from '@/stores/orders';
-import api from '@/services/api';
+
 
 const orderStore = useOrderStore();
 
@@ -91,17 +74,6 @@ const groupedOrders = computed(() => {
     
     return groups.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 });
-
-const updateStatusGroup = async (group, status) => {
-    try {
-        await Promise.all(group.items.map(o => 
-            api.patch(`/livreur/orders/${o.id}`, { status })
-        ));
-        await orderStore.fetchOrders();
-    } catch (err) {
-        alert("Erreur lors de la mise à jour du statut");
-    }
-};
 
 const formatStatus = (status) => {
     const statuses = {
@@ -155,37 +127,6 @@ onMounted(() => {
 .status-badge.paid { background: #E8F5E9; color: #2E7D32; }
 .status-badge.in_transit { background: #FFF3E0; color: #E65100; }
 .status-badge.delivered { background: #E3F2FD; color: #1565C0; }
-
-.status-select {
-    width: 100%;
-    padding: 0.8rem;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    font-size: 1rem;
-    color: var(--text);
-    background-color: var(--surface);
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.status-select:focus {
-    border-color: var(--primary);
-}
-
-.locked-status {
-    padding: 1rem;
-    background-color: #E8F5E9;
-    color: #2E7D32;
-    border-radius: 8px;
-    font-weight: 600;
-    text-align: center;
-    border: 1px solid #C8E6C9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
 
 .btn-secondary {
     background-color: #FFFFFF;

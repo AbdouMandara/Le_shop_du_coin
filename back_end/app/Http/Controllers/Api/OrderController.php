@@ -73,10 +73,18 @@ class OrderController extends Controller
             ];
             
             if (isset($messages[$request->status]) && $order->user) {
-                $order->user->notifications()->create([
-                    'message' => $messages[$request->status],
-                    'type' => 'info',
-                ]);
+                // De-duplicate: don't create the same notification if it was created in the last minute
+                $alreadyNotified = $order->user->notifications()
+                    ->where('message', $messages[$request->status])
+                    ->where('created_at', '>=', now()->subMinute())
+                    ->exists();
+
+                if (!$alreadyNotified) {
+                    $order->user->notifications()->create([
+                        'message' => $messages[$request->status],
+                        'type' => 'info',
+                    ]);
+                }
             }
         }
 

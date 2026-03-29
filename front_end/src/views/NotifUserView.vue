@@ -5,18 +5,18 @@
       <p>Retrouvez vos alertes et l'état de vos commandes.</p>
     </header>
 
-    <div v-if="loading" class="loading">
+    <div v-if="notifStore.loading" class="loading">
       <i class='bx bx-loader-alt bx-spin'></i> Chargement...
     </div>
 
-    <div v-else-if="notifications.length === 0" class="empty">
+    <div v-else-if="notifStore.notifications.length === 0" class="empty">
       <i class='bx bx-bell-off'></i>
       <p>Aucune notification pour le moment.</p>
     </div>
 
     <div v-else class="notifications-list">
       <div 
-        v-for="notif in notifications" 
+        v-for="notif in notifStore.notifications" 
         :key="notif.id" 
         class="notification-card"
         :class="{ 'unread': !notif.read_at }"
@@ -29,7 +29,7 @@
           <span class="date">{{ formatDate(notif.created_at) }}</span>
         </div>
         <div class="notification-actions">
-          <button v-if="!notif.read_at" @click="markAsRead(notif.id)" class="btn-read" title="Marquer comme lu">
+          <button v-if="!notif.read_at" @click="notifStore.markAsRead(notif.id)" class="btn-read" title="Marquer comme lu">
             <i class='bx bx-check-circle'></i>
           </button>
         </div>
@@ -39,33 +39,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import api from '@/services/api';
+import { onMounted } from 'vue';
+import { useUserNotificationsStore } from '@/stores/userNotifications';
 
-const notifications = ref([]);
-const loading = ref(true);
-
-const fetchNotifications = async () => {
-    loading.value = true;
-    try {
-        const response = await api.get('/client/notifications');
-        notifications.value = response.data;
-    } catch (err) {
-        console.error('Erreur de chargement des notifications', err);
-    } finally {
-        loading.value = false;
-    }
-};
-
-const markAsRead = async (id) => {
-    try {
-        await api.patch(`/client/notifications/${id}/read`);
-        const notif = notifications.value.find(n => n.id === id);
-        if (notif) notif.read_at = new Date().toISOString();
-    } catch (err) {
-        console.error('Erreur lors du marquage de la notification', err);
-    }
-};
+const notifStore = useUserNotificationsStore();
 
 const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -77,7 +54,7 @@ const formatDate = (dateString) => {
 };
 
 onMounted(() => {
-    fetchNotifications();
+    notifStore.fetchNotifications();
 });
 </script>
 

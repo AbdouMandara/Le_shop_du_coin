@@ -28,6 +28,7 @@
             </router-link>
             <router-link to="/client/notifications" class="header-icon-link" title="Notifications">
               <i class='bx bx-bell'></i>
+              <span v-if="notifStore.unreadCount > 0" class="notif-badge">{{ notifStore.unreadCount }}</span>
             </router-link>
             <router-link to="/client/cart" class="header-icon-link header-cart-link" title="Panier">
               <i class='bx bx-cart'></i>
@@ -83,11 +84,13 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useThemeStore } from '@/stores/theme';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
+import { useUserNotificationsStore } from '@/stores/userNotifications';
 import { useRouter } from 'vue-router';
 
 const themeStore = useThemeStore();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+const notifStore = useUserNotificationsStore();
 const router = useRouter();
 
 const showUserMenu = ref(false);
@@ -123,6 +126,18 @@ const closeMenu = (e) => {
 onMounted(() => {
   themeStore.applyTheme();
   document.addEventListener('click', closeMenu);
+  
+  if (authStore.isAuthenticated && authStore.isUser) {
+    notifStore.fetchNotifications();
+    // Poll every 30 seconds to update the badge
+    const interval = setInterval(() => {
+        if (authStore.isAuthenticated && authStore.isUser) {
+            notifStore.fetchNotifications();
+        } else {
+            clearInterval(interval);
+        }
+    }, 30000);
+  }
 });
 
 onUnmounted(() => {
@@ -272,6 +287,22 @@ onUnmounted(() => {
   border-radius: 10px;
   min-width: 18px;
   text-align: center;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background-color: #ff4d4d;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
 }
 
 /* User Profile Mini */
