@@ -34,7 +34,7 @@
                         <option value="delivered">Livrée (Terminé)</option>
                     </select>
                 </template>
-                <template v-else-if="order.status === 'delivered'">
+                <template v-else-if="group.status === 'delivered'">
                     <div class="locked-status">
                         <i class='bx bx-check-shield'></i> Commande Livrée
                     </div>
