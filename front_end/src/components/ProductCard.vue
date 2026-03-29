@@ -75,9 +75,9 @@ const formatPrice = (price) => {
 };
 
 const getProductImage = computed(() => {
-    if (!props.product) return 'https://via.placeholder.com/300';
+    if (!props.product) return 'https://placehold.co/300x300?text=Produit';
     const path = props.product.image;
-    if (!path) return 'https://via.placeholder.com/300';
+    if (!path) return 'https://placehold.co/300x300?text=Produit';
     if (path.startsWith('http')) return path;
     return `/storage/${path}`;
 });
@@ -194,7 +194,7 @@ const getProductImage = computed(() => {
 }
 
 .product-card__add-btn {
-  background-color: var(--secondary);
+  background-color: var(--primary);
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;

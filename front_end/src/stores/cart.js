@@ -37,7 +37,7 @@ export const useCartStore = defineStore('cart', {
         async fetchFavorites() {
             const prefix = this.getPrefix();
             const response = await api.get(`${prefix}/favorites`);
-            this.favorites = response.data;
+            this.favorites = Array.isArray(response.data) ? response.data : (response.data.data || []);
         },
         async toggleFavorite(productId) {
             const prefix = this.getPrefix();
@@ -47,7 +47,8 @@ export const useCartStore = defineStore('cart', {
                 this.favorites = this.favorites.filter(f => f.id !== existing.id);
             } else {
                 const response = await api.post(`${prefix}/favorites`, { product_id: productId });
-                this.favorites.push(response.data);
+                const newFavorite = response.data.data || response.data;
+                this.favorites.push(newFavorite);
             }
         }
     }

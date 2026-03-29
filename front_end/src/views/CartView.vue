@@ -14,7 +14,7 @@
     <div v-else class="cart-container">
         <div class="cart-items">
             <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
-                <img :src="item.image || 'https://via.placeholder.com/100'" :alt="item.name" />
+                <img :src="item.image ? (item.image.startsWith('http') ? item.image : `/storage/${item.image}`) : 'https://placehold.co/100x100?text=Produit'" :alt="item.name" />
                 <div class="cart-item__info">
                     <h4>{{ item.name }}</h4>
                     <p>{{ item.price }} FCFA</p>
