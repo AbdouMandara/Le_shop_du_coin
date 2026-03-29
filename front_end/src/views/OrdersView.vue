@@ -1,12 +1,13 @@
 <template>
   <div class="orders-page">
     <header class="page-header">
-      <h1>Commandes</h1>
-      <p v-if="authStore.isUser">Vos commandes récentes</p>
-      <p v-else>Gestion des commandes clients</p>
-    </header>
-
-    <div v-if="!authStore.isUser" class="filters-section">
+        <div class="text-header">
+            <h1>Commandes</h1>
+            <p v-if="authStore.isUser">Vos commandes récentes</p>
+            <p v-else>Gestion des commandes clients</p>
+        </div>
+      
+      <div v-if="!authStore.isUser" class="filters-section">
       <div class="filter-actions">
         <div class="filter-dropdown-wrapper" ref="filterMenuRef">
           <button class="action-btn" @click.stop="showFilterModal = !showFilterModal">
@@ -36,6 +37,7 @@
         </div>
       </div>
     </div>
+    </header>
 
     <div v-if="orderStore.loading" class="loading">
       <i class='bx bx-loader-alt bx-spin'></i> Chargement...
@@ -66,8 +68,8 @@
                    </p>
                </div>
                <p v-if="group.delivery">Avec livraison</p>
-               <p v-if="group.items[0]?.livreur" class="assigned-to">
-                  <i class='bx bx-user-check'></i> Assigné à: {{ group.items[0].livreur.name }}
+               <p v-if="group.items[0]?.livreur" style="margin-top: 0.5em;">
+                  <i class='bx bx-user-check'></i> Assigné à : <span style="color:var(--primary)">{{ group.items[0].livreur.name }}</span>
                </p>
             </div>
           </div>
@@ -171,11 +173,11 @@
                 <strong>{{ selectedOrder?.items?.map(i => i.product?.name).join(', ') }}</strong>
              </div>
              <div class="detail-row">
-                <span>Client:</span>
+                <span>Client :</span>
                 <strong>{{ selectedOrder?.user?.name }}</strong>
              </div>
              <div class="detail-row">
-                <span>Date:</span>
+                <span>Date :</span>
                 <strong>{{ formatDate(selectedOrder?.created_at) }}</strong>
              </div>
           </div>
@@ -488,7 +490,15 @@ const downloadInvoice = async (orderId) => {
     flex-direction: column;
     gap: 2rem;
 }
-
+.page-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.text-header{
+    display: flex;
+    flex-direction: column;
+}
 .page-header h1 {
     margin: 0;
     font-size: 2rem;
