@@ -52,6 +52,21 @@
                                           <option value="name">Alphabétique</option>
                                       </select>
                                   </div>
+
+                                  <div class="filter-group">
+                                      <label>Gamme de prix (FCFA)</label>
+                                      <div class="price-range-inputs">
+                                          <input type="number" v-model="minPrice" placeholder="Min" class="filter-input-small">
+                                          <span>à</span>
+                                          <input type="number" v-model="maxPrice" placeholder="Max" class="filter-input-small">
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="filter-dropdown-footer" v-if="hasActiveFilters">
+                                  <button @click="resetFilters" class="btn-reset-filters">
+                                      <i class='bx bx-refresh'></i> Réinitialiser
+                                  </button>
                               </div>
                           </div>
                       </div>
@@ -432,6 +447,24 @@ const showFilterModal = ref(false);
 const sortBy = ref('date');
 const sortOrder = ref('desc');
 const filterInStock = ref(false);
+const minPrice = ref(null);
+const maxPrice = ref(null);
+
+const hasActiveFilters = computed(() => {
+    return sortBy.value !== 'date' || 
+           sortOrder.value !== 'desc' || 
+           filterInStock.value || 
+           minPrice.value !== null || 
+           maxPrice.value !== null;
+});
+
+const resetFilters = () => {
+    sortBy.value = 'date';
+    sortOrder.value = 'desc';
+    filterInStock.value = false;
+    minPrice.value = null;
+    maxPrice.value = null;
+};
 const filterMenuRef = ref(null);
 
 const closeFilterMenu = (e) => {
@@ -460,7 +493,12 @@ const filteredProducts = computed(() => {
         const matchesCategory = !selectedCategory.value || p.category_id === selectedCategory.value;
         const matchesSearch = p.name.toLowerCase().includes(searchQuery.value.toLowerCase());
         const matchesStock = !filterInStock.value || p.stock > 0;
-        return matchesCategory && matchesSearch && matchesStock;
+        
+        const price = parseFloat(p.price);
+        const matchesMinPrice = minPrice.value === null || minPrice.value === '' || price >= parseFloat(minPrice.value);
+        const matchesMaxPrice = maxPrice.value === null || maxPrice.value === '' || price <= parseFloat(maxPrice.value);
+
+        return matchesCategory && matchesSearch && matchesStock && matchesMinPrice && matchesMaxPrice;
     });
 
     // 2. Trier
@@ -718,6 +756,52 @@ onUnmounted(() => {
     color: var(--text);
     outline: none;
     font-size: 0.9rem;
+}
+
+.price-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-input-small {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background-color: var(--background);
+    color: var(--text);
+    outline: none;
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+.filter-dropdown-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.btn-reset-filters {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-reset-filters:hover {
+    background-color: var(--neutral);
+    border-color: var(--secondary);
+    color: var(--secondary);
 }
 
 .checkbox-label {

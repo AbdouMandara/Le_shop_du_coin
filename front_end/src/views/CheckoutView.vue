@@ -161,6 +161,22 @@
       </div>
 
     </div>
+
+    <!-- SUCCESS ANIMATION OVERLAY -->
+    <Teleport to="body">
+        <div v-if="isOrderSuccess" class="success-overlay">
+            <div class="success-card">
+                <Vue3Lottie 
+                    :animation-data="OrderSuccessJSON"
+                    :height="300"
+                    :width="300"
+                    :loop="false"
+                />
+                <h2>Commande validée !</h2>
+                <p>Merci pour votre achat. Nous préparons votre commande.</p>
+            </div>
+        </div>
+    </Teleport>
   </div>
 </template>
 
@@ -178,6 +194,9 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
+// Lottie
+import OrderSuccessJSON from '@/assets/animation_commande_soumisse_lottie.json';
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -190,6 +209,7 @@ const orderStore = useOrderStore();
 const router = useRouter();
 
 const loading = ref(false);
+const isOrderSuccess = ref(false);
 const step = ref(1);
 const deliveryMode = ref('sans_livraison'); 
 
@@ -261,6 +281,12 @@ const handleConfirm = async () => {
                 await orderStore.placeOrder(item.id, isDelivery, locationStr);
             }
         }
+        
+        // --- SUCCESS SEQUENCE ---
+        isOrderSuccess.value = true;
+        
+        // Wait 3 seconds for the animation to be seen
+        await new Promise(r => setTimeout(r, 3500));
         
         cartStore.items = [];
         cartStore.saveCart();
@@ -539,5 +565,52 @@ const handleConfirm = async () => {
  
 .text-muted {
     color: #888;
+}
+
+/* SUCCESS OVERLAY STYLES */
+.success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+[data-theme='dark'] .success-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.success-card {
+    text-align: center;
+    background: var(--surface);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    max-width: 500px;
+    width: 90%;
+    animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.success-card h2 {
+    font-size: 2rem;
+    margin: 1.5rem 0 1rem;
+    color: var(--primary);
+}
+
+.success-card p {
+    color: #666;
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
 </style>

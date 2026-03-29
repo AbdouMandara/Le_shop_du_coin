@@ -220,13 +220,13 @@ onUnmounted(() => {
 
 .header-register-btn {
   color: var(--background);
-  background-color: var(--secondary);
-  border: 1px solid var(--secondary);
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .header-register-btn:hover {
   filter: brightness(0.9);
-  border-color: var(--secondary);
+  border-color: var(--primary);
 }
 
 /* Header Navigation Icons */
