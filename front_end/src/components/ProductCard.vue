@@ -1,5 +1,5 @@
 <template>
-  <div class="product-card">
+  <div v-if="product" class="product-card">
     <div class="product-card__image">
       <div class="product-card__image-wrapper">
         <img v-if="product.image" :src="getProductImage" :alt="product.name" />
@@ -49,10 +49,12 @@ const props = defineProps({
 const cartStore = useCartStore();
 
 const isFavorite = computed(() => {
+    if (!props.product) return false;
     return cartStore.favorites.some(f => f.product_id === props.product.id);
 });
 
 const cartItem = computed(() => {
+    if (!props.product) return null;
     return cartStore.items.find(i => i.id === props.product.id);
 });
 
@@ -73,6 +75,7 @@ const formatPrice = (price) => {
 };
 
 const getProductImage = computed(() => {
+    if (!props.product) return 'https://via.placeholder.com/300';
     const path = props.product.image;
     if (!path) return 'https://via.placeholder.com/300';
     if (path.startsWith('http')) return path;
