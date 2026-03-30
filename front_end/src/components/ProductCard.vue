@@ -10,7 +10,7 @@
       </div>
       <button 
         class="product-card__favorite" 
-        @click.stop="cartStore.toggleFavorite(product.id)"
+        @click.stop="favStore.toggleFavorite(product.id)"
         :class="{ 'product-card__favorite--active': isFavorite }"
       >
         <i :class="isFavorite ? 'bx bxs-heart' : 'bx bx-heart'"></i>
@@ -46,6 +46,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useCartStore } from '@/stores/cart';
+import { useFavoritesStore } from '@/stores/favorites';
 
 const props = defineProps({
     product: {
@@ -55,10 +56,11 @@ const props = defineProps({
 });
 
 const cartStore = useCartStore();
+const favStore = useFavoritesStore();
 
 const isFavorite = computed(() => {
     if (!props.product) return false;
-    return cartStore.favorites.some(f => f.product_id === props.product.id);
+    return favStore.isFavorite(props.product.id);
 });
 
 const cartItem = computed(() => {

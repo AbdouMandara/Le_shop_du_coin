@@ -5,7 +5,7 @@
         <p>Retrouvez tous les produits que vous avez aimés.</p>
     </header>
 
-    <div v-if="cartStore.favorites.length === 0" class="empty">
+    <div v-if="favoriteProducts.length === 0" class="empty">
         <i class='bx bx-heart'></i>
         <p>Vous n'avez pas encore de favoris.</p>
         <router-link to="/products" class="btn-primary">Découvrir nos produits</router-link>
@@ -13,23 +13,31 @@
 
     <div v-else class="product-grid">
         <ProductCard 
-            v-for="fav in cartStore.favorites" 
-            :key="fav.id" 
-            :product="fav.product"
+            v-for="product in favoriteProducts" 
+            :key="product.id" 
+            :product="product"
         />
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useCartStore } from '@/stores/cart';
+import { onMounted, computed } from 'vue';
+import { useProductStore } from '@/stores/products';
+import { useFavoritesStore } from '@/stores/favorites';
 import ProductCard from '@/components/ProductCard.vue';
 
-const cartStore = useCartStore();
+const productStore = useProductStore();
+const favStore = useFavoritesStore();
+
+const favoriteProducts = computed(() => {
+    return productStore.products.filter(p => favStore.isFavorite(p.id));
+});
 
 onMounted(() => {
-    cartStore.fetchFavorites();
+    if (productStore.products.length === 0) {
+        productStore.fetchProducts();
+    }
 });
 </script>
 

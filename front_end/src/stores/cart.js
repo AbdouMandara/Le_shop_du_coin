@@ -5,19 +5,12 @@ import { useAuthStore } from './auth';
 export const useCartStore = defineStore('cart', {
     state: () => ({
         items: JSON.parse(localStorage.getItem('cart') || '[]'),
-        favorites: [],
     }),
     getters: {
         totalPrice: (state) => state.items.reduce((acc, item) => acc + item.price * item.quantity, 0),
         itemCount: (state) => state.items.length,
     },
     actions: {
-        getPrefix() {
-            const authStore = useAuthStore();
-            if (authStore.isAdmin) return '/admin';
-            if (authStore.isLivreur) return '/livreur';
-            return '/client'; // Default for authenticated users in this context
-        },
         addToCart(product) {
             const existing = this.items.find(i => i.id === product.id);
             if (existing) {
@@ -33,23 +26,6 @@ export const useCartStore = defineStore('cart', {
         },
         saveCart() {
             localStorage.setItem('cart', JSON.stringify(this.items));
-        },
-        async fetchFavorites() {
-            const prefix = this.getPrefix();
-            const response = await api.get(`${prefix}/favorites`);
-            this.favorites = Array.isArray(response.data) ? response.data : (response.data.data || []);
-        },
-        async toggleFavorite(productId) {
-            const prefix = this.getPrefix();
-            const existing = this.favorites.find(f => f.product_id === productId);
-            if (existing) {
-                await api.delete(`${prefix}/favorites/${existing.id}`);
-                this.favorites = this.favorites.filter(f => f.id !== existing.id);
-            } else {
-                const response = await api.post(`${prefix}/favorites`, { product_id: productId });
-                const newFavorite = response.data.data || response.data;
-                this.favorites.push(newFavorite);
-            }
         }
     }
 });

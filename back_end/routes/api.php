@@ -60,7 +60,6 @@ Route::middleware(['auth:sanctum', 'role:user'])->prefix('client')->group(functi
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
-    Route::apiResource('favorites', \App\Http\Controllers\Api\FavoriteController::class);
     
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
     Route::post('/orders', [\App\Http\Controllers\Api\OrderController::class, 'store']);
