@@ -9,7 +9,10 @@ class ProductResource extends \Illuminate\Http\Resources\Json\JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'price' => $this->price,
+            'original_price' => $this->price,
+            'price' => $this->final_price,
+            'discounted_price' => $this->final_price,
+            'active_promotion' => $this->active_promotion,
             'quantity' => $this->quantity,
             'description' => $this->description,
             'image' => $this->image,

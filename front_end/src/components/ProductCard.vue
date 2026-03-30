@@ -5,6 +5,9 @@
         <img v-if="product.image" :src="getProductImage" :alt="product.name" />
         <i v-else class='bx bx-image'></i>
       </div>
+      <div v-if="product.original_price && product.original_price > product.price" class="product-card__promo-badge">
+        Promo
+      </div>
       <button 
         class="product-card__favorite" 
         @click.stop="cartStore.toggleFavorite(product.id)"
@@ -18,7 +21,12 @@
         <h3 class="product-card__title">{{ product.name }}</h3>
         <div class="product-card__category-price">
           <p class="product-card__category">{{ product.category?.label }}</p>
-          <span class="product-card__price">{{ formatPrice(product.price) }} FCFA</span>
+          <div class="product-card__price-wrapper">
+            <span v-if="product.original_price && product.original_price > product.price" class="product-card__price--old">
+              {{ formatPrice(product.original_price) }}
+            </span>
+            <span class="product-card__price">{{ formatPrice(product.price) }} FCFA</span>
+          </div>
         </div>
       </div>
       <div class="product-card__footer">
@@ -188,9 +196,36 @@ const getProductImage = computed(() => {
 
 .product-card__price {
   font-weight: 800;
-  color: var(--text);
+  color: var(--primary);
   font-size: 1.15rem;
   letter-spacing: -0.02em;
+}
+
+.product-card__price--old {
+  font-size: 0.85rem;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.product-card__promo-badge {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  background-color: var(--secondary);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.product-card__price-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 .product-card__add-btn {

@@ -1,7 +1,7 @@
 <template>
   <div class="checkout-page">
     <header class="page-header">
-      <h1 v-if="step === 1">Options de Livraison</h1>
+      <h1 v-if="step === 1">Mode de récupération</h1>
       <h1 v-else-if="step === 2">Lieu de Livraison</h1>
       <h1 v-else-if="step === 3">Résumé de votre commande</h1>
       
@@ -48,7 +48,7 @@
       <div v-if="step === 2" class="checkout-step">
         <div class="map-section">
           <h4>Sélectionnez votre lieu de livraison sur la carte :</h4>
-          <p class="map-hint">Cliquez sur la carte pour placer le repère. La boutique (Dakar) est indiquée par le repère d'origine.</p>
+          <p class="map-hint">Cliquez sur la carte pour placer le repère. La boutique (CTEC Sarl) est indiquée par le repère d'origine.</p>
           
           <div class="map-container">
             <l-map ref="map" v-model:zoom="zoom" :center="center" @click="onMapClick">
@@ -60,7 +60,7 @@
 
               <!-- Fixed Shop Location -->
               <l-marker :lat-lng="shopLocation">
-                  <l-tooltip>Notre Boutique</l-tooltip>
+                  <l-tooltip>Boutique CTEC Sarl</l-tooltip>
               </l-marker>
 
               <!-- User Selection Location -->

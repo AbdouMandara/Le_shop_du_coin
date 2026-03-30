@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\StatsController;
 use Illuminate\Http\Request;
@@ -37,6 +38,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::patch('/orders/bulk-status-update', [\App\Http\Controllers\Api\OrderController::class, 'bulkStatusUpdate']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
     Route::patch('/orders/{order}/assign', [\App\Http\Controllers\Api\OrderController::class, 'assignLivreur']);
+    
+    Route::apiResource('promotions', PromotionController::class);
+    Route::post('/products/{product}/promotions/{promotion}', [PromotionController::class, 'assignToProduct']);
+    Route::delete('/products/{product}/promotions/{promotion}', [PromotionController::class, 'removeFromProduct']);
 });
 
 // Livreur routes

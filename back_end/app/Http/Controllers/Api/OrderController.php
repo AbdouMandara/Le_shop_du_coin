@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\OrderRequest;
 use App\Http\Requests\OrderUpdateRequest;
@@ -44,6 +45,9 @@ class OrderController extends Controller
     {
         $donnees_validees = $request->validated();
         $donnees_validees['user_id'] = $request->user()->id;
+        
+        $product = Product::findOrFail($donnees_validees['product_id']);
+        $donnees_validees['price_at_purchase'] = $product->final_price;
         
         $order = Order::create($donnees_validees);
 

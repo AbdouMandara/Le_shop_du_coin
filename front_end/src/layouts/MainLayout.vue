@@ -5,37 +5,51 @@
       <div class="header-logo">
         <span class="header-title">Le shop du coin</span>
       </div>
+      <!-- Navigation Centrale (Uniquement si connecté) -->
+      <div v-if="authStore.isAuthenticated" class="header-nav-container">
+        <div class="header-nav-icons">
+          <!-- Client Nav -->
+          <template v-if="authStore.isUser">
+            <router-link v-for="link in clientLinks" :key="link.path" :to="link.path" class="header-icon-link">
+              <div class="icon-wrapper">
+                <i :class="link.icon"></i>
+                <span v-if="link.id === 'notifications' && notifStore.unreadCount > 0" class="notif-badge">
+                  {{ notifStore.unreadCount }}
+                </span>
+                <span v-if="link.id === 'cart' && cartTotalCount > 0" class="cart-badge">
+                  {{ cartTotalCount }}
+                </span>
+              </div>
+              <span class="link-label">{{ link.label }}</span>
+            </router-link>
+          </template>
+
+          <!-- Admin Nav -->
+          <template v-else-if="authStore.isAdmin">
+            <router-link v-for="link in adminLinks" :key="link.path" :to="link.path" class="header-icon-link">
+              <i :class="link.icon"></i>
+              <span class="link-label">{{ link.label }}</span>
+            </router-link>
+          </template>
+
+          <!-- Livreur Nav -->
+          <template v-else-if="authStore.isLivreur">
+            <router-link to="/livreur" class="header-icon-link">
+              <i class='bx bx-cycling'></i>
+              <span class="link-label">Mes Livraisons</span>
+            </router-link>
+          </template>
+        </div>
+      </div>
+
       <div class="header-actions">
-        <button v-if="!authStore.isUser" class="header-theme-toggle" @click="themeStore.toggleTheme" title="Changer de thème">
-          <i :class="themeStore.dark ? 'bx bx-sun' : 'bx bx-moon'"></i>
-        </button>
-        
         <template v-if="!authStore.isAuthenticated">
           <router-link to="/login" class="header-auth-btn header-login-btn">Connexion</router-link>
           <router-link to="/register" class="header-auth-btn header-register-btn">Inscription</router-link>
         </template>
 
-        <template v-else-if="authStore.isUser">
-          <div class="header-nav-icons">
-            <router-link to="/client/products" class="header-icon-link" title="Produits">
-              <i class='bx bx-grid-alt'></i>
-            </router-link>
-            <router-link to="/client/favorites" class="header-icon-link" title="Favoris">
-              <i class='bx bx-heart'></i>
-            </router-link>
-            <router-link to="/client/orders" class="header-icon-link" title="Commandes">
-              <i class='bx bx-package'></i>
-            </router-link>
-            <router-link to="/client/notifications" class="header-icon-link" title="Notifications">
-              <i class='bx bx-bell'></i>
-              <span v-if="notifStore.unreadCount > 0" class="notif-badge">{{ notifStore.unreadCount }}</span>
-            </router-link>
-            <router-link to="/client/cart" class="header-icon-link header-cart-link" title="Panier">
-              <i class='bx bx-cart'></i>
-              <span v-if="cartTotalCount > 0" class="cart-badge">{{ cartTotalCount }}</span>
-            </router-link>
-          </div>
-
+        <!-- Menu Utilisateur (Indépendant pour l'alignement à droite) -->
+        <template v-else>
           <div class="header-user-wrapper" ref="userMenuRef" @click.stop="toggleUserMenu">
             <div class="header-user-profile">
               <div class="user-avatar-mini">
@@ -63,7 +77,7 @@
       </div>
     </header>
     <div class="main-layout">
-      <Sidebar v-if="authStore.isAuthenticated && !authStore.isUser" />
+      <!-- Sidebar removed for all roles -->
       <main class="main-content">
         <router-view v-slot="{ Component, route }">
           <transition name="fade" mode="out-in">
@@ -77,7 +91,6 @@
 </template>
 
 <script setup>
-import Sidebar from '@/components/Sidebar.vue';
 import NotificationToast from '@/components/NotificationToast.vue';
 import FloatingCartIcon from '@/components/FloatingCartIcon.vue';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
@@ -92,6 +105,22 @@ const authStore = useAuthStore();
 const cartStore = useCartStore();
 const notifStore = useUserNotificationsStore();
 const router = useRouter();
+
+const clientLinks = [
+  { label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' },
+  { label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart' },
+  { label: 'Commandes', path: '/client/orders', icon: 'bx bx-package' },
+  { label: 'Notifications', path: '/client/notifications', icon: 'bx bx-bell', id: 'notifications' },
+  { label: 'Panier', path: '/client/cart', icon: 'bx bx-cart', id: 'cart' },
+];
+
+const adminLinks = [
+  { label: 'Tableau de bord', path: '/admin', icon: 'bx bx-shield-quarter' },
+  { label: 'Produits', path: '/admin/products', icon: 'bx bx-grid-alt' },
+  { label: 'Livreurs', path: '/admin/livreurs', icon: 'bx bx-cycling' },
+  { label: 'Promotions', path: '/admin/promotions', icon: 'bx bx-purchase-tag-alt' },
+  { label: 'Commandes', path: '/admin/orders', icon: 'bx bx-package' },
+];
 
 const showUserMenu = ref(false);
 const userMenuRef = ref(null);
@@ -172,6 +201,7 @@ onUnmounted(() => {
 }
 
 .header-logo {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -205,8 +235,10 @@ onUnmounted(() => {
 }
 
 .header-actions {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 1rem;
 }
 
@@ -245,13 +277,18 @@ onUnmounted(() => {
 }
 
 /* Header Navigation Icons */
+.header-nav-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+}
+
 .header-nav-icons {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  margin-right: 1rem;
-  padding-right: 1.25rem;
-  border-right: 1px solid var(--border);
+  gap: 1.5rem;
 }
 
 .header-icon-link {
@@ -260,15 +297,31 @@ onUnmounted(() => {
   opacity: 0.7;
   transition: all 0.2s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 0.2rem;
   position: relative;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link-label {
+  font-size: 0.85rem;
+  font-family: 'Cal Sans', sans-serif;
+  white-space: nowrap;
 }
 
 .header-icon-link:hover,
 .header-icon-link.router-link-active {
   color: var(--primary);
   opacity: 1;
-  transform: translateY(-2px);
 }
 
 .header-cart-link {
@@ -277,32 +330,41 @@ onUnmounted(() => {
 
 .cart-badge {
   position: absolute;
-  top: -8px;
-  right: -10px;
+  top: -5px;
+  right: -8px;
   background-color: var(--secondary);
   color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 10px;
-  min-width: 18px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 8px;
+  min-width: 15px;
+  max-height: 15px;
   text-align: center;
+  border: 1.5px solid var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notif-badge {
   position: absolute;
-  top: -8px;
-  right: -10px;
+  top: -5px;
+  right: -8px;
   background-color: #ff4d4d;
   color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 10px;
-  min-width: 18px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 8px;
+  min-width: 15px;
+  max-height: 15px;
   text-align: center;
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+  border: 1.5px solid var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
 }
 
 /* User Profile Mini */
