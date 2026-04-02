@@ -15,7 +15,7 @@
     </div>
     <div class="product-card__content">
       <div class="product-card__header">
-        <h3 class="product-card__title">{{ product.name }}</h3>
+        <h3 class="product-card__title">{{ product.name.length > 30 ? product.name.slice(0, 30) + '...' : product.name }}</h3>
         <div class="product-card__category-price">
           <div class="product-card__price-wrapper">
             <span v-if="product.original_price && product.original_price > product.price" class="product-card__price--old">
@@ -180,8 +180,8 @@ const getStarClass = (index, rating) => {
   color: var(--text);
   line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
