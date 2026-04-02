@@ -6,7 +6,7 @@
         <span class="header-title">Le shop du coin</span>
       </div>
       <!-- Search Bar Centrale -->
-      <div class="header-search-container">
+      <div v-if="!authStore.isUser" class="header-search-container">
         <div class="header-search-wrapper">
           <i class='bx bx-search search-icon'></i>
           <input 

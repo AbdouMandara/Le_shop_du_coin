@@ -4,7 +4,7 @@
       <!-- Header / Nav -->
       <div class="nav-header">
         <button @click="$router.back()" class="back-link">
-          <i class='bx bx-left-arrow-alt'></i> Retour aux produits
+          <i class='bx bx-left-arrow-alt'></i> Retour
         </button>
       </div>
 
@@ -70,9 +70,7 @@
             <button v-if="!cartItem" class="add-btn" @click="cartStore.addToCart(product)">
               <i class='bx bx-cart-add'></i> Ajouter au panier
             </button>
-            <div v-else class="already-in-cart">
-              <i class='bx bx-check-double'></i> Produit ajouté au panier
-            </div>
+
           </div>
         </div>
       </div>
@@ -182,14 +180,26 @@ const getStarClass = (index, rating) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 0.2s;
-  padding: 0;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  margin-left: -1rem;
+}
+
+.back-link i {
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
 }
 
 .back-link:hover {
   color: var(--primary);
+  background-color: var(--neutral);
+}
+
+.back-link:hover i {
+  transform: translateX(-5px);
 }
 
 .product-grid {
@@ -249,7 +259,7 @@ const getStarClass = (index, rating) => {
 .product-info {
   display: flex;
   flex-direction: column;
-  padding-top: 5em;
+  padding-top: 4.5em;
 }
 
 .info-top {
@@ -351,11 +361,13 @@ const getStarClass = (index, rating) => {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin-top: 2rem;
 }
 
 .qty-selection {
   display: flex;
+  justify-content: space-between;
+  width: 100%;
   align-items: center;
   gap: 1rem;
   background-color: var(--neutral);

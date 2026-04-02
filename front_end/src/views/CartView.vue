@@ -22,7 +22,7 @@
                 <img :src="item.image ? (item.image.startsWith('http') ? item.image : `/storage/${item.image}`) : 'https://placehold.co/100x100?text=Produit'" :alt="item.name" />
                 <div class="cart-item__info">
                     <h4>{{ item.name }}</h4>
-                    <p>{{ item.price }} FCFA</p>
+                    <p>{{ formatPrice(item.price) }} FCFA</p>
                 </div>
                 <div class="cart-item__quantity">
                     <span>Quantité: <strong>{{ item.quantity }}</strong></span>
@@ -40,6 +40,9 @@
 import { useCartStore } from '@/stores/cart';
 
 const cartStore = useCartStore();
+const formatPrice = (price) => {
+    return new Intl.NumberFormat('fr-FR').format(price);
+};
 </script>
 
 <style scoped>
