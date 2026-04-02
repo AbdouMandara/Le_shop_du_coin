@@ -117,10 +117,13 @@ const navItems = computed(() => {
             items.push({ label: 'Livreurs', path: '/admin/livreurs', icon: 'bx bx-cycling' });
             items.push({ label: 'Promotions', path: '/admin/promotions', icon: 'bx bx-purchase-tag-alt' });
             items.push({ label: 'Commandes', path: '/admin/orders', icon: 'bx bx-package' });
-        } 
+        } else if (authStore.isLivreur) {
+            items.push({ label: 'Tableau de bord', path: '/livreur', icon: 'bx bx-shield-quarter' });
+            items.push({ label: 'Commandes', path: '/livreur/orders', icon: 'bx bx-package' });
+        }
     } else {
         items.push({ label: 'Accueil', path: '/', icon: 'bx bx-home' });
-        items.push({ label: 'Produits', path: '/products', icon: 'bx bx-grid-alt' });a
+        items.push({ label: 'Produits', path: '/products', icon: 'bx bx-grid-alt' });
     }
 
     return items;

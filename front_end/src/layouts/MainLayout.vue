@@ -22,6 +22,32 @@
         </div>
       </div>
 
+      <!-- Navigation tabs -->
+      <nav v-if="authStore.isAuthenticated" class="header-nav-container">
+        <div class="header-nav-icons">
+          <router-link 
+            v-for="link in navLinks" 
+            :key="link.path" 
+            :to="link.path"
+            class="header-icon-link"
+            :title="link.label"
+          >
+            <div class="icon-wrapper">
+              <i :class="link.icon"></i>
+              <!-- Badge Panier -->
+              <span v-if="link.id === 'cart' && cartTotalCount > 0" class="cart-badge">
+                {{ cartTotalCount }}
+              </span>
+              <!-- Badge Notifications -->
+              <span v-if="link.id === 'notifications' && notifStore.unreadCount > 0" class="notif-badge">
+                {{ notifStore.unreadCount }}
+              </span>
+            </div>
+            <span class="link-label">{{ link.label }}</span>
+          </router-link>
+        </div>
+      </nav>
+
       <div class="header-actions">
         <template v-if="!authStore.isAuthenticated">
           <router-link to="/login" class="header-auth-btn header-login-btn">Connexion</router-link>
@@ -105,6 +131,18 @@ const adminLinks = [
   { label: 'Promotions', path: '/admin/promotions', icon: 'bx bx-purchase-tag-alt' },
   { label: 'Commandes', path: '/admin/orders', icon: 'bx bx-package' },
 ];
+
+const livreurLinks = [
+  { label: 'Dashboard', path: '/livreur', icon: 'bx bx-shield-quarter' },
+  { label: 'Commandes', path: '/livreur/orders', icon: 'bx bx-package' },
+];
+
+const navLinks = computed(() => {
+  if (authStore.isAdmin) return adminLinks;
+  if (authStore.isLivreur) return livreurLinks;
+  if (authStore.isUser) return clientLinks;
+  return [];
+});
 
 const showUserMenu = ref(false);
 const userMenuRef = ref(null);
@@ -271,7 +309,7 @@ const handleKeyDown = (e) => {
 
 /* Search Bar Centrale */
 .header-search-container {
-  flex: 2;
+  flex: 1.5;
   display: flex;
   justify-content: center;
   margin: 0 1rem;
@@ -333,11 +371,10 @@ const handleKeyDown = (e) => {
 
 /* Navigation Centrale (Uniquement si connecté) */
 .header-nav-container {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  flex: 2;
   display: flex;
   justify-content: center;
+  margin: 0 1rem;
 }
 
 .header-nav-icons {

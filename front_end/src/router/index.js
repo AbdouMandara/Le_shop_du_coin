@@ -63,16 +63,12 @@ router.beforeEach(async (to, from, next) => {
     await auth.fetchUser()
   }
 
-  // Allow authenticated users to see the landing page
-  /*
-  if (auth.isAuthenticated) {
-    if (to.path === '/' || to.name === 'home') {
-      if (auth.isAdmin) return next({ name: 'admin' });
-      if (auth.isLivreur) return next({ name: 'livreur' });
-      if (auth.isUser) return next({ name: 'client-home' });
-    }
+  // Redirect authenticated users from landing page to their respective dashboards
+  if (auth.isAuthenticated && (to.path === '/' || to.name === 'home')) {
+    if (auth.isAdmin) return next({ name: 'admin' });
+    if (auth.isLivreur) return next({ name: 'livreur' });
+    if (auth.isUser) return next({ name: 'client-home' });
   }
-  */
 
   if (to.meta.auth && !auth.isAuthenticated) {
     next({ name: 'login' })
@@ -81,8 +77,13 @@ router.beforeEach(async (to, from, next) => {
     if (auth.isAdmin) return next({ name: 'admin' });
     if (auth.isLivreur) return next({ name: 'livreur' });
     next({ name: 'home' })
-  } else if (to.meta.role && auth.user?.role?.label !== to.meta.role) {
-    next({ name: 'home' })
+  } else if (to.meta.role) {
+    const userRole = typeof auth.user?.role === 'string' ? auth.user.role : auth.user?.role?.label;
+    if (userRole !== to.meta.role) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
   } else {
     next()
   }

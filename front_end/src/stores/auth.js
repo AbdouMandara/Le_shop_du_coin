@@ -8,10 +8,19 @@ export const useAuthStore = defineStore('auth', {
         error: null,
     }),
     getters: {
-        isAuthenticated: (state) => state.user,
-        isAdmin: (state) => state.user?.role?.label === 'admin',
-        isUser: (state) => state.user?.role?.label === 'user',
-        isLivreur: (state) => state.user?.role?.label === 'livreur',
+        isAuthenticated: (state) => !!state.user,
+        isAdmin: (state) => {
+            const role = state.user?.role;
+            return typeof role === 'string' ? role === 'admin' : role?.label === 'admin';
+        },
+        isUser: (state) => {
+            const role = state.user?.role;
+            return typeof role === 'string' ? role === 'user' : role?.label === 'user';
+        },
+        isLivreur: (state) => {
+            const role = state.user?.role;
+            return typeof role === 'string' ? role === 'livreur' : role?.label === 'livreur';
+        },
     },
     actions: {
         async login(credentials) {

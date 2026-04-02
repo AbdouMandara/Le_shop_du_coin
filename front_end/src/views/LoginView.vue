@@ -71,7 +71,15 @@ const form = reactive({
 const handleLogin = async () => {
     try {
         await authStore.login(form);
-        router.push({ name: 'home' });
+        
+        // Redirect based on role
+        if (authStore.isAdmin) {
+            router.push({ name: 'admin' });
+        } else if (authStore.isLivreur) {
+            router.push({ name: 'livreur' });
+        } else {
+            router.push({ name: 'client-home' });
+        }
     } catch (err) {
         // Error handled in store
     }

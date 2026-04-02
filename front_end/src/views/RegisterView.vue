@@ -118,7 +118,15 @@ const handleRegister = async () => {
         await api.get('http://localhost:8000/sanctum/csrf-cookie');
         await api.post('/register', form);
         await authStore.fetchUser();
-        router.push({ name: 'home' });
+        
+        // Redirect based on role
+        if (authStore.isAdmin) {
+            router.push({ name: 'admin' });
+        } else if (authStore.isLivreur) {
+            router.push({ name: 'livreur' });
+        } else {
+            router.push({ name: 'client-home' });
+        }
     } catch (err) {
         error.value = err.response?.data?.message || 'Une erreur est survenue';
     } finally {
