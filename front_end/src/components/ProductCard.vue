@@ -5,9 +5,6 @@
         <img v-if="product.image" :src="getProductImage" :alt="product.name" />
         <i v-else class='bx bx-image'></i>
       </div>
-      <div v-if="product.original_price && product.original_price > product.price" class="product-card__promo-badge">
-        Promo
-      </div>
       <button 
         class="product-card__favorite" 
         @click.stop="favStore.toggleFavorite(product.id)"
@@ -19,21 +16,23 @@
     <div class="product-card__content">
       <div class="product-card__header">
         <h3 class="product-card__title">{{ product.name }}</h3>
-        <div class="product-card__rating">
-          <div class="product-card__stars">
-            <i v-for="i in 5" :key="i" class='bx' 
-               :class="getStarClass(i, product.avg_rating || product.rating || 0)"></i>
-          </div>
-          <span class="product-card__rating-value">{{ (product.avg_rating || product.rating || 0).toFixed(1) }}</span>
-        </div>
         <div class="product-card__category-price">
-          <p class="product-card__category">{{ product.category?.label }}</p>
           <div class="product-card__price-wrapper">
             <span v-if="product.original_price && product.original_price > product.price" class="product-card__price--old">
               {{ formatPrice(product.original_price) }}
             </span>
             <span class="product-card__price">{{ formatPrice(product.price) }} FCFA</span>
           </div>
+          <div v-if="product.original_price && product.original_price > product.price" class="product-card__promo-badge">
+              - {{ formatPrice(product.active_promotion.value) }} %
+          </div>
+        </div>
+        <div class="product-card__rating">
+          <div class="product-card__stars">
+            <i v-for="i in 5" :key="i" class='bx' 
+               :class="getStarClass(i, product.avg_rating || product.rating || 0)"></i>
+          </div>
+          <span class="product-card__rating-value">{{ (product.avg_rating || product.rating || 0).toFixed(1) }} / 5</span>
         </div>
       </div>
       <div class="product-card__footer">
@@ -125,7 +124,6 @@ const getStarClass = (index, rating) => {
 .product-card__image {
   position: relative;
   height: 200px;
-  /* background-color: var(--neutral); */
   overflow: hidden;
   padding: 1rem;
 }
@@ -197,7 +195,7 @@ const getStarClass = (index, rating) => {
 
 .product-card__stars {
   display: flex;
-  color: #FFB800; /* Gold/Star color */
+  color: #FFB800; 
   font-size: 0.9rem;
 }
 
@@ -210,7 +208,7 @@ const getStarClass = (index, rating) => {
 .product-card__category-price{
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   
 }
 .product-card__category {
@@ -230,14 +228,14 @@ const getStarClass = (index, rating) => {
 }
 
 .product-card__price {
-  font-weight: 800;
-  color: var(--primary);
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
 }
 
 .product-card__price--old {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: #999;
   text-decoration: line-through;
   font-weight: 500;
@@ -245,9 +243,6 @@ const getStarClass = (index, rating) => {
 }
 
 .product-card__promo-badge {
-  position: absolute;
-  top: 22px;
-  left: 22px;
   background-color: var(--secondary);
   color: white;
   padding: 4px 10px;
@@ -257,10 +252,9 @@ const getStarClass = (index, rating) => {
   z-index: 10;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
-
 .product-card__price-wrapper {
   display: flex;
-  align-items: center;
+  flex-direction: column-reverse;
 }
 
 .product-card__add-btn {

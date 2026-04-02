@@ -7,74 +7,55 @@
       </div>
       
       <div v-else-if="productStore.promotionalProducts.length > 0" class="hero-container container">
-        <div class="hero-header-content">
-          <h1 class="hero-title stagger-item">Nos produits en promotion</h1>
-        </div>
 
         <div class="hero-card-carousel">
-          <div class="hero-carousel__viewport-container">
-            <button 
-              @click="prevHeroSlide" 
-              class="hero-side-btn prev" 
-              v-if="totalSlides > 1"
+          <swiper
+            :modules="[Autoplay, Pagination, Navigation, FreeMode, Mousewheel]"
+            v-bind="swiperOptions"
+            class="hero-swiper"
+          >
+            <swiper-slide 
+              v-for="product in productStore.promotionalProducts" 
+              :key="product.id"
+              class="hero-promo-slide"
             >
-              <i class='bx bx-chevron-left'></i>
-            </button>
-
-            <div class="hero-carousel__viewport">
-              <div 
-                class="hero-carousel__track" 
-                :style="{ transform: `translateX(-${currentHeroSlide * slideWidth}%)` }"
-              >
-                <!-- Original Items -->
-                <div 
-                  v-for="(product, index) in productStore.promotionalProducts" 
-                  :key="product.id" 
-                  class="hero-card-slide"
-                  :class="{ 'is-middle': isMiddle(index) }"
-                >
-                  <div class="stagger-card" :style="{ animationDelay: `${(index % 3) * 0.15}s` }">
-                    <ProductCard :product="product" />
+              <div class="promo-container">
+                <div class="promo-visual">
+                  <img :src="getProductImage(product.image)" :alt="product.name" @error="handleImgError" />
+                  <div class="promo-badge-float" v-if="product.original_price > product.price">
+                    -{{ Math.round(((product.original_price - product.price) / product.original_price) * 100) }}%
                   </div>
                 </div>
-                <!-- Clones for smooth wrap-around appearance -->
-                <div 
-                  v-for="(product, index) in productStore.promotionalProducts.slice(0, 2)" 
-                  :key="'clone-' + product.id" 
-                  class="hero-card-slide"
-                  :class="{ 'is-middle': isMiddle(productStore.promotionalProducts.length + index) }"
-                >
-                  <div class="stagger-card">
-                    <ProductCard :product="product" />
+                
+                <div class="promo-content">
+                  <div class="promo-content-inner">
+                    <span class="promo-label">EXCLUSIVITÉ PROMO</span>
+                    <h2 class="promo-title">{{ product.name }}</h2>
+                    <p class="promo-description">{{ product.description }}</p>
+                    
+                    <div class="promo-pricing-hero">
+                      <div class="price-main">{{ formatPrice(product.price) }} <small>FCFA</small></div>
+                      <div class="price-old" v-if="product.original_price > product.price">
+                        {{ formatPrice(product.original_price) }} FCFA
+                      </div>
+                    </div>
+                    
+                    <div class="promo-actions-hero">
+                      <button @click="addToCart(product)" class="btn-buy-hero">
+                        <i class='bx bx-cart-add'></i> Ajouter au Panier
+                      </button>
+                      <router-link :to="`/product/${product.id}`" class="btn-details-hero">
+                         Détails du Produit
+                      </router-link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </swiper-slide>
+          </swiper>
 
-            <button 
-              @click="nextHeroSlide" 
-              class="hero-side-btn next" 
-              v-if="totalSlides > 1"
-            >
-              <i class='bx bx-chevron-right'></i>
-            </button>
-          </div>
-
-          <!-- Pagination Dots below -->
-          <div class="hero-carousel__dots" v-if="totalSlides > 1">
-            <span 
-              v-for="i in totalSlides" 
-              :key="i" 
-              class="hero-dot" 
-              :class="{ active: currentHeroSlide === i - 1 }"
-              @click="goToHeroSlide(i - 1)"
-            ></span>
-          </div>
-        </div>
-        
-        <!-- Timer bar centered at bottom of hero -->
-        <div class="hero-timer-container">
-           <div class="hero-timer-bar" :style="{ width: carouselProgress + '%' }"></div>
+          <!-- Swiper Controls preserved but moved to sides if needed -->
+          <div class="hero-carousel__dots-vertical"></div>
         </div>
       </div>
 
@@ -89,7 +70,7 @@
     </section>
 
     <!-- VALUE PROPOSITION (Plus-value) -->
-    <section class="usp-section">
+    <!-- <section class="usp-section">
       <div class="container">
         <div class="usp-grid">
           <div class="usp-item">
@@ -116,7 +97,7 @@
           
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- PRODUCT DISCOVERY SECTION -->
     <section id="discovery" class="discovery-section">
@@ -124,7 +105,6 @@
         <div class="section-header-modern">
           <div class="header-left">
             <h2 class="title-sub">Découvrez notre collection</h2>
-            <h1 class="title-main">Produits pour vous</h1>
           </div>
         </div>
 
@@ -151,7 +131,7 @@
 
         <div v-if="productStore.loading" class="loading-grid">
            <div class="grid-spinner"></div>
-           <p>Chargement des merveilles...</p>
+           <p>Chargement des produits ...</p>
         </div>
         
         <div v-else-if="filteredProducts.length > 0" class="products-grid-modern">
@@ -216,14 +196,39 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay, Pagination, Navigation, FreeMode, Mousewheel } from 'swiper/modules';
 import { useProductStore } from '@/stores/products';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import ProductCard from '@/components/ProductCard.vue';
+import 'swiper/css';
+import 'swiper/css/pagination';
 
 const productStore = useProductStore();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+
+// --- SWIPER CONFIGURATION ---
+const swiperOptions = {
+    direction: 'vertical',
+    slidesPerView: 1,
+    spaceBetween: 0,
+    mousewheel: true,
+    keyboard: true,
+    loop: true,
+    speed: 1000,
+    autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+    },
+    pagination: {
+        el: '.hero-carousel__dots-vertical',
+        clickable: true,
+        bulletClass: 'hero-dot-v',
+        bulletActiveClass: 'active',
+    },
+};
 
 // Navigation logic based on role
 const productsUrl = computed(() => {
@@ -235,67 +240,10 @@ const productsUrl = computed(() => {
     return '/products';
 });
 
-// --- HERO CAROUSEL LOGIC ---
-const currentHeroSlide = ref(0);
-const carouselProgress = ref(0);
-const itemsPerPage = ref(3);
-const slideWidth = computed(() => 100 / itemsPerPage.value); // Move by 1 item (33.33%)
-
-const totalSlides = computed(() => {
-    return productStore.promotionalProducts.length;
-});
-
-const isMiddle = (index) => {
-    const len = productStore.promotionalProducts.length;
-    if (len === 0) return false;
-    // We want the item at (currentHeroSlide + 1) to be scaled.
-    // This applies both to original items and their clones at the end.
-    return (index % len) === (currentHeroSlide.value + 1) % len;
-};
+// --- REMOVED OBSOLETE CAROUSEL LOGIC ---
 
 
-let heroInterval;
-let progressInterval;
-const SLIDE_DURATION = 6000;
-
-const nextHeroSlide = () => {
-    const len = productStore.promotionalProducts.length;
-    if (len === 0) return;
-    currentHeroSlide.value = (currentHeroSlide.value + 1) % len;
-    carouselProgress.value = 0;
-};
-
-const prevHeroSlide = () => {
-    const len = productStore.promotionalProducts.length;
-    if (len === 0) return;
-    currentHeroSlide.value = (currentHeroSlide.value - 1 + len) % len;
-    carouselProgress.value = 0;
-};
-
-const goToHeroSlide = (index) => {
-    currentHeroSlide.value = index;
-    carouselProgress.value = 0;
-    startHeroAutoPlay(); 
-};
-
-const startHeroAutoPlay = () => {
-    stopHeroAutoPlay();
-    heroInterval = setInterval(nextHeroSlide, SLIDE_DURATION);
-    
-    let startTime = Date.now();
-    progressInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        carouselProgress.value = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
-        if (carouselProgress.value >= 100) {
-            startTime = Date.now(); // reset for next slide
-        }
-    }, 30);
-};
-
-const stopHeroAutoPlay = () => {
-    if (heroInterval) clearInterval(heroInterval);
-    if (progressInterval) clearInterval(progressInterval);
-};
+// --- REMOVED OBSOLETE AUTOPLAY LOGIC ---
 
 // --- PRODUCT DISCOVERY LOGIC ---
 const activeCategory = ref('all');
@@ -353,7 +301,6 @@ const calculateDiscount = () => {
 const addToCart = (product) => {
   cartStore.addToCart(product);
   closePromoModal();
-  // Optional: show a notification
 };
 
 // --- UTILITIES ---
@@ -378,17 +325,16 @@ onMounted(async () => {
         productStore.fetchPromotionalProducts(),
         productStore.fetchCategories()
     ]);
-    startHeroAutoPlay();
 });
 
 onUnmounted(() => {
-    stopHeroAutoPlay();
+    // Swiper cleanup is handled automatically by the component
 });
 
 
 // Watchers
 watch(activeCategory, () => {
-  visibleCount.value = 10;
+  visibleCount.value = 10
 });
 </script>
 
@@ -396,7 +342,7 @@ watch(activeCategory, () => {
 .home-view {
   display: flex;
   flex-direction: column;
-  gap: 0; /* Removing large gaps to handle section spacing internally */
+  gap: 2em;
   background-color: var(--background);
 }
 
@@ -409,18 +355,18 @@ watch(activeCategory, () => {
 
 /* --- HERO SECTION --- */
 .hero-section {
-  position: relative;
-  height: 90vh;
-  min-height: 600px;
+  background-color: var(--primary);
+  min-height: 95lvh;
+  display: flex;
+  align-items: center;
   overflow: hidden;
-  background-color: #000;
+  color: white;
 }
-
 .hero-loader {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: 400px;
   color: white;
 }
 
@@ -445,63 +391,6 @@ watch(activeCategory, () => {
   4.9% { top: 36px; left: 36px; width: 0; height: 0; opacity: 0; }
   5% { top: 36px; left: 36px; width: 0; height: 0; opacity: 1; }
   100% { top: 0px; left: 0px; width: 72px; height: 72px; opacity: 0; }
-}
-
-.hero-carousel {
-  height: 100%;
-  width: 100%;
-  position: relative;
-}
-
-.hero-carousel__viewport {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-.hero-carousel__track {
-  display: flex;
-  height: 100%;
-  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-.hero-slide {
-  flex: 0 0 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0 5%;
-}
-
-.hero-slide__image {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 1;
-}
-
-.hero-slide__image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-slide__overlay {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
-  z-index: 2;
-}
-/* --- HERO SECTION (NEW CARD CAROUSEL) --- */
-.hero-section {
-background-color: var(--primary);
-    min-height: 95lvh;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    color: white;
 }
 
 .hero-header-content {
@@ -546,182 +435,212 @@ background-color: var(--primary);
 }
 
 /* Carousel Track Layout */
-.hero-card-carousel {
+.hero-swiper {
   width: 100%;
-  padding: 0 1rem;
+  height: 500px; /* Reduced height */
+  border-radius: 24px;
+  overflow: hidden;
+  background: transparent;
 }
 
-.hero-carousel__viewport-container {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  position: relative;
-  width: 100%;
-}
-
-.hero-carousel__viewport {
-  flex: 1;
-  overflow: hidden; /* Back to hidden for proper side clipping */
-  padding: 2rem 0 3rem;
-}
-
-.hero-carousel__track {
-  display: flex;
-  align-items: center;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero-card-slide {
-  flex: 0 0 calc(100% / 3);
-  padding: 0 20px;
-  display: flex;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero-card-slide.is-middle {
-  transform: scale(1.15);
-  z-index: 10;
-}
-
-.hero-card-slide :deep(.product-card) {
-  flex: 1;
+.hero-promo-slide {
   height: 100%;
   width: 100%;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-  transition: all 0.5s ease;
-  background-color: white;
 }
 
-.hero-card-slide.is-middle :deep(.product-card) {
-  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
-  border: 1px solid var(--secondary);
+.promo-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
 }
 
-/* Side Buttons */
-.hero-side-btn {
-  background: white;
-  border: none;
-  color: var(--primary);
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+.promo-visual {
+  flex: 1;
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-  z-index: 50;
-  flex-shrink: 0;
+  padding: 2.5rem;
+  overflow: hidden;
 }
 
-.hero-side-btn:hover:not(:disabled) {
-  transform: scale(1.1);
-  background-color: var(--secondary);
+.promo-visual img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 50px rgba(0,0,0,0.1));
+}
+
+.promo-badge-float {
+  position: absolute;
+  top: 3rem; left: 3rem;
+  background: var(--secondary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+  z-index: 5;
+}
+
+.promo-content {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  padding: 3rem;
+  position: relative;
+}
+
+.promo-content::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 15%;
+  height: 70%; width: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.promo-content-inner {
+  max-width: 500px;
+}
+
+.promo-label {
+  display: inline-block;
+  color: var(--secondary);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+}
+
+.promo-title {
+  font-size: clamp(2rem, 3vw, 2.5rem); /* Smaller price */
+  font-weight: 800;
+  color: white;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.promo-description {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.promo-pricing-hero {
+  margin-bottom: 2.5rem;
+}
+
+.price-main {
+  font-size: 2.2rem;
+  font-weight: 800;
   color: white;
 }
 
-.hero-side-btn:disabled {
-  opacity: 0.2;
-  cursor: not-allowed;
+.price-main small { font-size: 1rem; margin-left: 0.4rem; color: rgba(255,255,255,0.4); }
+
+.price-old {
+  font-size: 1.4rem;
+  text-decoration: line-through;
+  color: #bbb;
+  margin-top: 0.5rem;
 }
 
-.hero-carousel__dots {
+.promo-actions-hero {
   display: flex;
+  gap: 1.5rem;
+}
+
+.btn-buy-hero {
+  flex: 1;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 1.25rem 2rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin-top: 1rem;
+  box-shadow: 0 15px 30px rgba(255, 107, 53, 0.2);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.hero-dot {
+.btn-buy-hero:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
+}
+
+.btn-details-hero {
+  flex: 1;
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255,255,255,0.1);
+  padding: 1.25rem 2rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-details-hero:hover {
+  border-color: white;
+  background: rgba(255,255,255,0.05);
+}
+
+/* Vertical Pagination Styling */
+.hero-carousel__dots-vertical {
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 100;
+}
+
+:deep(.hero-dot-v) {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255,255,255,0.1);
   cursor: pointer;
   transition: all 0.4s ease;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-.hero-dot.active {
+:deep(.hero-dot-v.active) {
   background: var(--secondary);
-  transform: scale(1.3);
+  height: 35px;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(255, 107, 53, 0.2);
 }
 
-.hero-carousel__nav {
-  position: absolute;
-  bottom: 50px; right: 5%;
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  z-index: 20;
+@media (max-width: 1024px) {
+  .hero-swiper { height: auto; border-radius: 20px; }
+  .promo-container { flex-direction: column; }
+  .promo-visual { padding: 3rem; min-height: 350px; }
+  .promo-content { padding: 3rem; }
+  .promo-actions-hero { flex-direction: column; }
+  .hero-carousel__dots-vertical { display: none; }
 }
-
-.nav-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  width: 50px; height: 50px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-}
-
-.nav-btn:hover {
-  background: white;
-  color: black;
-}
-
-.hero-carousel__indicators {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.indicator-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.indicator-dot.active {
-  width: 30px;
-  border-radius: 4px;
-  background: var(--secondary);
-}
-
-/* Fallback Hero */
-.hero-content-fallback {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: var(--primary);
-  color: white;
-}
-
-.hero-fallback-text h1 { font-size: 4rem; margin-bottom: 1.5rem; }
-.hero-fallback-text p { font-size: 1.25rem; margin-bottom: 3rem; opacity: 0.8; }
-
-.btn-cta-large {
-  background: var(--secondary);
-  color: white;
-  padding: 1.5rem 3.5rem;
-  border-radius: 50px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-.btn-cta-large:hover { transform: scale(1.05); }
 
 /* --- USP SECTION --- */
 .usp-section {
@@ -756,23 +675,18 @@ background-color: var(--primary);
 .usp-content h3 { font-size: 1.1rem; margin-bottom: 0.25rem; font-weight: 700; }
 .usp-content p { font-size: 0.9rem; color: #666; margin: 0; }
 
-/* --- DISCOVERY SECTION --- */
-.discovery-section {
-  padding: 8rem 0;
-}
-
 .section-header-modern {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
 }
 
 .title-sub { font-size: 1rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.1em; }
 .title-main { font-size: 3rem; font-weight: 800; margin: 0; }
 
 .filter-tabs-container {
-  margin-bottom: 4rem;
+  margin-bottom: 1rem;
   overflow-x: auto;
   padding-bottom: 1rem;
 }
@@ -961,22 +875,5 @@ background-color: var(--primary);
   color: var(--primary);
   text-decoration: underline;
   font-weight: 600;
-}
-
-/* --- RESPONSIVE --- */
-@media (max-width: 1024px) {
-  .hero-slide__title { font-size: 3rem; }
-  .promo-modal-content { flex-direction: column; }
-  .modal-image-side { height: 300px; }
-  .modal-info-side { padding: 2rem; }
-}
-
-@media (max-width: 768px) {
-  .hero-section { height: 70vh; }
-  .hero-slide__glass-panel { padding: 1.5rem; }
-  .hero-slide__title { font-size: 2.2rem; }
-  .hero-actions { flex-direction: column; }
-  .section-header-modern { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-  .search-bar-modern { width: 100%; }
 }
 </style>
