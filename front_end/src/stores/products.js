@@ -62,7 +62,7 @@ export const useProductStore = defineStore('products', {
         async fetchProduct(id) {
             const prefix = this._getPrefix();
             const response = await api.get(`${prefix}/products/${id}`);
-            this.currentProduct = response.data;
+            this.currentProduct = response.data.data || response.data;
         },
         async addProduct(productData) {
             const prefix = this._getPrefix();

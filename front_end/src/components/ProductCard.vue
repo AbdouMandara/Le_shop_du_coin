@@ -1,10 +1,10 @@
 <template>
   <div v-if="product" class="product-card">
     <div class="product-card__image">
-      <div class="product-card__image-wrapper">
+      <router-link :to="detailRoute" class="product-card__image-wrapper">
         <img v-if="product.image" :src="getProductImage" :alt="product.name" />
         <i v-else class='bx bx-image'></i>
-      </div>
+      </router-link>
       <button 
         class="product-card__favorite" 
         @click.stop="favStore.toggleFavorite(product.id)"
@@ -15,7 +15,9 @@
     </div>
     <div class="product-card__content">
       <div class="product-card__header">
-        <h3 class="product-card__title">{{ product.name.length > 30 ? product.name.slice(0, 30) + '...' : product.name }}</h3>
+        <router-link :to="detailRoute" class="product-title-link">
+          <h3 class="product-card__title">{{ product.name.length > 30 ? product.name.slice(0, 30) + '...' : product.name }}</h3>
+        </router-link>
         <div class="product-card__category-price">
           <div class="product-card__price-wrapper">
             <span v-if="product.original_price && product.original_price > product.price" class="product-card__price--old">
@@ -53,6 +55,7 @@
 import { computed } from 'vue';
 import { useCartStore } from '@/stores/cart';
 import { useFavoritesStore } from '@/stores/favorites';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
     product: {
@@ -63,6 +66,14 @@ const props = defineProps({
 
 const cartStore = useCartStore();
 const favStore = useFavoritesStore();
+const authStore = useAuthStore();
+
+const detailRoute = computed(() => {
+    if (authStore.isAuthenticated && authStore.isUser) {
+        return { name: 'client-product-details', params: { id: props.product.id } };
+    }
+    return { name: 'product-details', params: { id: props.product.id } };
+});
 
 const isFavorite = computed(() => {
     if (!props.product) return false;
@@ -184,6 +195,10 @@ const getStarClass = (index, rating) => {
   line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.product-title-link {
+  text-decoration: none;
 }
 
 .product-card__rating {
