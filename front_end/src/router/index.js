@@ -63,7 +63,8 @@ router.beforeEach(async (to, from, next) => {
     await auth.fetchUser()
   }
 
-  // Global redirection for authenticated users visiting root or general paths
+  // Allow authenticated users to see the landing page
+  /*
   if (auth.isAuthenticated) {
     if (to.path === '/' || to.name === 'home') {
       if (auth.isAdmin) return next({ name: 'admin' });
@@ -71,6 +72,7 @@ router.beforeEach(async (to, from, next) => {
       if (auth.isUser) return next({ name: 'client-home' });
     }
   }
+  */
 
   if (to.meta.auth && !auth.isAuthenticated) {
     next({ name: 'login' })

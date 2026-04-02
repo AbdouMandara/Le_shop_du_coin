@@ -19,6 +19,13 @@
     <div class="product-card__content">
       <div class="product-card__header">
         <h3 class="product-card__title">{{ product.name }}</h3>
+        <div class="product-card__rating">
+          <div class="product-card__stars">
+            <i v-for="i in 5" :key="i" class='bx' 
+               :class="getStarClass(i, product.avg_rating || product.rating || 0)"></i>
+          </div>
+          <span class="product-card__rating-value">{{ (product.avg_rating || product.rating || 0).toFixed(1) }}</span>
+        </div>
         <div class="product-card__category-price">
           <p class="product-card__category">{{ product.category?.label }}</p>
           <div class="product-card__price-wrapper">
@@ -91,6 +98,12 @@ const getProductImage = computed(() => {
     if (path.startsWith('http')) return path;
     return `/storage/${path}`;
 });
+
+const getStarClass = (index, rating) => {
+    if (rating >= index) return 'bxs-star';
+    if (rating >= index - 0.5) return 'bx-star-half';
+    return 'bx-star';
+};
 </script>
 
 <style scoped>
@@ -174,6 +187,26 @@ const getProductImage = computed(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.product-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.product-card__stars {
+  display: flex;
+  color: #FFB800; /* Gold/Star color */
+  font-size: 0.9rem;
+}
+
+.product-card__rating-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #888;
+}
+
 .product-card__category-price{
   display: flex;
   justify-content: space-between;

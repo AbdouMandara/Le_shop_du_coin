@@ -5,40 +5,20 @@
       <div class="header-logo">
         <span class="header-title">Le shop du coin</span>
       </div>
-      <!-- Navigation Centrale (Uniquement si connecté) -->
-      <div v-if="authStore.isAuthenticated" class="header-nav-container">
-        <div class="header-nav-icons">
-          <!-- Client Nav -->
-          <template v-if="authStore.isUser">
-            <router-link v-for="link in clientLinks" :key="link.path" :to="link.path" class="header-icon-link">
-              <div class="icon-wrapper">
-                <i :class="link.icon"></i>
-                <span v-if="link.id === 'notifications' && notifStore.unreadCount > 0" class="notif-badge">
-                  {{ notifStore.unreadCount }}
-                </span>
-                <span v-if="link.id === 'cart' && cartTotalCount > 0" class="cart-badge">
-                  {{ cartTotalCount }}
-                </span>
-              </div>
-              <span class="link-label">{{ link.label }}</span>
-            </router-link>
-          </template>
-
-          <!-- Admin Nav -->
-          <template v-else-if="authStore.isAdmin">
-            <router-link v-for="link in adminLinks" :key="link.path" :to="link.path" class="header-icon-link">
-              <i :class="link.icon"></i>
-              <span class="link-label">{{ link.label }}</span>
-            </router-link>
-          </template>
-
-          <!-- Livreur Nav -->
-          <template v-else-if="authStore.isLivreur">
-            <router-link to="/livreur" class="header-icon-link">
-              <i class='bx bx-cycling'></i>
-              <span class="link-label">Mes Livraisons</span>
-            </router-link>
-          </template>
+      <!-- Search Bar Centrale -->
+      <div class="header-search-container">
+        <div class="header-search-wrapper">
+          <i class='bx bx-search search-icon'></i>
+          <input 
+            type="text" 
+            v-model="productStore.searchQuery" 
+            placeholder="Rechercher un produit..." 
+            ref="searchInputRef"
+          />
+          <div class="search-hint">
+             <span>Ctrl</span>
+             <span>K</span>
+          </div>
         </div>
       </div>
 
@@ -98,13 +78,17 @@ import { useThemeStore } from '@/stores/theme';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { useUserNotificationsStore } from '@/stores/userNotifications';
+import { useProductStore } from '@/stores/products';
 import { useRouter } from 'vue-router';
 
 const themeStore = useThemeStore();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+const productStore = useProductStore();
 const notifStore = useUserNotificationsStore();
 const router = useRouter();
+
+const searchInputRef = ref(null);
 
 const clientLinks = [
   { label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' },
@@ -155,6 +139,7 @@ const closeMenu = (e) => {
 onMounted(() => {
   themeStore.applyTheme();
   document.addEventListener('click', closeMenu);
+  window.addEventListener('keydown', handleKeyDown);
   
   if (authStore.isAuthenticated && authStore.isUser) {
     notifStore.fetchNotifications();
@@ -171,7 +156,15 @@ onMounted(() => {
 
 onUnmounted(() => {
     document.removeEventListener('click', closeMenu);
+    window.removeEventListener('keydown', handleKeyDown);
 });
+
+const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.value?.focus();
+    }
+};
 </script>
 
 <style scoped>
@@ -276,7 +269,69 @@ onUnmounted(() => {
   border-color: var(--primary);
 }
 
-/* Header Navigation Icons */
+/* Search Bar Centrale */
+.header-search-container {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  margin: 0 1rem;
+}
+
+.header-search-wrapper {
+  background-color: var(--neutral);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 0.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 450px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.header-search-wrapper:focus-within {
+  background-color: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.search-icon {
+  color: #888;
+  font-size: 1.2rem;
+}
+
+.header-search-wrapper input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  color: var(--text);
+  font-family: 'Cal Sans', sans-serif;
+}
+
+.search-hint {
+  display: flex;
+  gap: 3px;
+  opacity: 0.4;
+}
+
+.search-hint span {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+[data-theme='dark'] .search-hint span {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Navigation Centrale (Uniquement si connecté) */
 .header-nav-container {
   position: absolute;
   left: 50%;

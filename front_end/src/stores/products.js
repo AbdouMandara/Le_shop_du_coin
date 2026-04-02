@@ -5,9 +5,12 @@ import { useAuthStore } from './auth';
 export const useProductStore = defineStore('products', {
     state: () => ({
         products: [],
+        promotionalProducts: [],
         categories: [],
         currentProduct: null,
         loading: false,
+        loadingPromotions: false,
+        searchQuery: '',
     }),
     actions: {
         _getPrefix() {
@@ -28,7 +31,6 @@ export const useProductStore = defineStore('products', {
                 this.products = response.data.data;
             } catch (error) {
                 console.error("Error fetching products:", error);
-                // Fallback attempt if we were trying an auth route
                 if (this._getPrefix() !== '') {
                     try {
                         const response = await api.get('/products');
@@ -39,6 +41,17 @@ export const useProductStore = defineStore('products', {
                 }
             } finally {
                 this.loading = false;
+            }
+        },
+        async fetchPromotionalProducts() {
+            this.loadingPromotions = true;
+            try {
+                const response = await api.get('/products/promotional');
+                this.promotionalProducts = response.data.data;
+            } catch (error) {
+                console.error("Error fetching promotional products:", error);
+            } finally {
+                this.loadingPromotions = false;
             }
         },
         async fetchCategories() {

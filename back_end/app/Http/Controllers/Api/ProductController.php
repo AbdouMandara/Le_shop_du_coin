@@ -20,6 +20,18 @@ class ProductController extends Controller
     }
 
     /**
+     * Display a listing of promotional products.
+     */
+    public function promotional()
+    {
+        $products = Product::whereHas('promotions', function($query) {
+            $query->active();
+        })->with(['category', 'promotions'])->latest()->get();
+
+        return ProductResource::collection($products);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(ProductRequest $request)
