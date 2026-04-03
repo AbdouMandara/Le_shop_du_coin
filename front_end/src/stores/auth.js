@@ -43,10 +43,12 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const response = await api.get('/user');
                 this.user = response.data;
+                localStorage.setItem('isLoggedIn', 'true');
                 return response.data;
             } catch (error) {
                 this.user = null;
                 localStorage.removeItem('isLoggedIn');
+                return null;
             }
         },
         async logout() {

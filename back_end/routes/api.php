@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\StatsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,9 +12,12 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::get('/user', function (Request $request) {
-    return $request->user()->load('role');
-})->middleware('auth:sanctum');
+
+// Profile routes — accessible by all authenticated users regardless of role
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+});
 
 // Public routes
 Route::get('/products', [ProductController::class, 'index']);

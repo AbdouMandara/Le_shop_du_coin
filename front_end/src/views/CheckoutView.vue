@@ -47,8 +47,6 @@
       <!-- STEP 2: Carte pour la livraison -->
       <div v-if="step === 2" class="checkout-step">
         <div class="map-section">
-          <h4>Sélectionnez votre lieu de livraison sur la carte :</h4>
-          <p class="map-hint">Cliquez sur la carte pour placer le repère. La boutique (CTEC Sarl) est indiquée par le repère d'origine.</p>
           
           <div class="map-container">
             <l-map ref="map" v-model:zoom="zoom" :center="center" @click="onMapClick">
@@ -215,10 +213,10 @@ const deliveryMode = ref('sans_livraison');
 
 // Map configuration
 const zoom = ref(13);
-// Shop location 
-const shopLocation = ref([4.038026, 9.741443]);
+
+const shopLocation = ref([4.038026, 9.741443]);// longitude et lagitude de la boutique
 const center = ref([4.038026, 9.741443]);
-const marker = ref(null);
+const marker = ref(null); 
 
 onMounted(() => {
     if (cartStore.items.length === 0) {

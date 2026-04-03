@@ -3,7 +3,7 @@
     <NotificationToast />
     <header class="global-header">
       <div class="header-logo">
-        <span class="header-title">Le shop du coin</span>
+        <img src="/logo ctec sarl.jpg" alt="logo de l'entreprise">
       </div>
       <!-- Search Bar Centrale -->
       <div v-if="!authStore.isUser" class="header-search-container">
@@ -232,13 +232,16 @@ const handleKeyDown = (e) => {
 }
 
 .header-logo {
-  flex: 1;
+  flex: 0.8;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary);
+}
+
+.header-logo img {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .header-title {

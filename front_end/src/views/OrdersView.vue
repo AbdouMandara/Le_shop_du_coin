@@ -4,7 +4,7 @@
         <div class="text-header">
             <h1>Commandes</h1>
             <p v-if="authStore.isUser">Vos commandes récentes</p>
-            <p v-else>Gestion des commandes clients</p>
+            <p v-else>Gestion des commandes des clients</p>
         </div>
       
       <div v-if="!authStore.isUser" class="filters-section">
@@ -140,7 +140,7 @@
               <button 
                  @click="downloadInvoice(group.items[0].id)" 
                  class="btn-download-minimal"
-                 title="Télécharger la facture globale"
+                 title="Télécharger la facture de la commande"
               >
                  <i class='bx bx-printer'></i> Imprimer
               </button>

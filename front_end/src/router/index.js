@@ -67,6 +67,8 @@ router.beforeEach(async (to, from, next) => {
   
   if (!auth.user && localStorage.getItem('isLoggedIn') === 'true') {
     await auth.fetchUser()
+    // If fetchUser failed (session expired), isLoggedIn is already cleared
+    // and auth.user remains null — no further calls will be made
   }
 
   // Redirect authenticated users from landing page to their respective dashboards

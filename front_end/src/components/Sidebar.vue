@@ -3,16 +3,6 @@
     class="sidebar" 
     :class="{ 'sidebar--collapsed': collapsed }"
   >
-    <header class="sidebar__header">
-       <div v-if="!collapsed" class="sidebar__logo">
-        <i class='bx bx-store-alt'></i>
-        <span>Shop</span>
-      </div> 
-      <button class="sidebar__toggle" @click="toggleSidebar">
-        <i class="bx bx-dock-right"></i>
-      </button>
-      
-    </header>
 
     <nav class="sidebar__nav">
       <router-link 
