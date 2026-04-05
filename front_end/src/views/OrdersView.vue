@@ -26,6 +26,16 @@
                 <label>Date de création</label>
                 <input type="date" v-model="filters.date" class="filter-input">
               </div>
+
+              <div class="filter-group" v-if="authStore.isAdmin">
+                <label>Type de commande</label>
+                <select v-model="filters.assignment" class="filter-input">
+                  <option value="">Toutes</option>
+                  <option value="assigned">Assignées</option>
+                  <option value="unassigned">En attente d'assignation</option>
+                  <option value="ordered">Commandées (Sans livraison)</option>
+                </select>
+              </div>
             </div>
 
             <div class="filter-dropdown-footer" v-if="activeFiltersCount > 0">
@@ -322,7 +332,8 @@ const groupedOrders = computed(() => {
 });
 
 const filters = reactive({
-    date: ''
+    date: '',
+    assignment: ''
 });
 
 const showFilterModal = ref(false);
@@ -369,11 +380,13 @@ const getClientStatus = (group) => {
 const activeFiltersCount = computed(() => {
     let count = 0;
     if (filters.date) count++;
+    if (filters.assignment) count++;
     return count;
 });
 
 const resetFilters = () => {
     filters.date = '';
+    filters.assignment = '';
 };
 
 const closeFilterMenu = (e) => {

@@ -33,6 +33,16 @@ class OrderController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
+        if ($request->has('assignment') && $request->assignment) {
+            if ($request->assignment === 'assigned') {
+                $query->whereNotNull('livreur_id');
+            } elseif ($request->assignment === 'unassigned') {
+                $query->whereNull('livreur_id')->where('delivery', true);
+            } elseif ($request->assignment === 'ordered') {
+                $query->whereNull('livreur_id')->where('delivery', false);
+            }
+        }
+
         // Return all for client, paginated for others
         if ($user->role->label === 'client') {
             return OrderResource::collection($query->get());
