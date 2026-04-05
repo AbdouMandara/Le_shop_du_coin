@@ -11,7 +11,10 @@ class ReviewController extends Controller
 {
     public function store(ReviewRequest $request)
     {
-        $review = Review::create($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['user_id'] = $request->user()->id;
+        
+        $review = Review::create($validatedData);
 
         return response()->json([
             'success' => true,

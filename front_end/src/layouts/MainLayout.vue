@@ -6,7 +6,7 @@
         <img src="/logo ctec sarl.jpg" alt="logo de l'entreprise">
       </div>
       <!-- Search Bar Centrale -->
-      <div v-if="!authStore.isAdmin && !authStore.isLivreur" class="header-search-container">
+      <div v-if="!authStore.isAuthenticated" class="header-search-container">
         <div class="header-search-wrapper">
           <i class='bx bx-search search-icon'></i>
           <input 
