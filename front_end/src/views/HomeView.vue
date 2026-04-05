@@ -8,6 +8,13 @@
       
       <div v-else-if="productStore.promotionalProducts.length > 0" class="hero-container container">
 
+        <!-- Marquee Produit en solde -->
+        <div class="promo-marquee">
+          <div class="marquee-content">
+            <span v-for="n in 10" :key="n"> 🔥 Produit en solde -20% 🔥 </span>
+          </div>
+        </div>
+
         <div class="hero-card-carousel">
           <swiper
             :modules="[Autoplay, Pagination, Navigation, FreeMode, Mousewheel]"
@@ -29,7 +36,7 @@
                 
                 <div class="promo-content">
                   <div class="promo-content-inner">
-                    <span class="promo-label">EXCLUSIVITÉ PROMO</span>
+                    <span class="promo-label">{{product.active_promotion.name}}</span>
                     <h2 class="promo-title">{{ product.name }}</h2>
                     <p class="promo-description">{{ product.description }}</p>
                     
@@ -378,6 +385,7 @@ watch(activeCategory, () => {
 }
 .loader-ripple div {
   position: absolute;
+  left : 50%;
   border: 4px solid var(--secondary);
   opacity: 1;
   border-radius: 50%;
@@ -443,6 +451,36 @@ watch(activeCategory, () => {
   background: transparent;
 }
 
+/* Marquee Styling */
+.promo-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  padding: 0.5rem 0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.marquee-content {
+  display: flex;
+  animation: marquee 25s linear infinite;
+  min-width: 200%;
+}
+.marquee-content span {
+  padding: 0 2rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.9rem;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .hero-promo-slide {
   height: 100%;
   width: 100%;
@@ -455,9 +493,9 @@ watch(activeCategory, () => {
 }
 
 .promo-visual {
-  flex: 1;
+  width : 50%;
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
+  /* background: rgba(255, 255, 255, 0.03); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -479,16 +517,12 @@ watch(activeCategory, () => {
   color: white;
   padding: 10px 20px;
   border-radius: 12px;
-  font-weight: 800;
   font-size: 1.2rem;
-  box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
   z-index: 5;
 }
 
 .promo-content {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
+  width : 50%;
   display: flex;
   align-items: center;
   padding: 3rem;
@@ -504,7 +538,7 @@ watch(activeCategory, () => {
 }
 
 .promo-content-inner {
-  max-width: 500px;
+  width : 100%;
 }
 
 .promo-label {
@@ -519,7 +553,7 @@ watch(activeCategory, () => {
 
 .promo-title {
   font-size: clamp(2rem, 3vw, 2.5rem); /* Smaller price */
-  font-weight: 800;
+  font-weight: 500;
   color: white;
   line-height: 1.1;
   margin-bottom: 1.5rem;
@@ -538,11 +572,14 @@ watch(activeCategory, () => {
 }
 
 .promo-pricing-hero {
-  margin-bottom: 2.5rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    gap: 2em;
+    align-items: center;
 }
 
 .price-main {
-  font-size: 2.2rem;
+  font-size: 3.2rem;
   font-weight: 800;
   color: white;
 }
@@ -562,41 +599,39 @@ watch(activeCategory, () => {
 }
 
 .btn-buy-hero {
-  flex: 1;
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 1.25rem 2rem;
-  border-radius: 100px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  box-shadow: 0 15px 30px rgba(255, 107, 53, 0.2);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    flex: 1;
+    background: var(--background);
+    color: var(--primary);
+    border: none;
+    padding: 0.75em;
+    border-radius: 100px;
+    font-size: 1.1rem;
+    font-weight : 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition : all 0.25s ease-in-out; 
 
-.btn-buy-hero:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
+    &:hover{
+      background: rgba(255,255,255,0.75);
+    }
 }
 
 .btn-details-hero {
-  flex: 1;
-  background: transparent;
-  color: white;
-  border: 2px solid rgba(255,255,255,0.1);
-  padding: 1.25rem 2rem;
-  border-radius: 100px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+    flex: 1;
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    /* padding: 1.25rem 2rem; */
+    padding: 0.75rem;
+    border-radius: 2em;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .btn-details-hero:hover {
@@ -627,7 +662,7 @@ watch(activeCategory, () => {
 }
 
 :deep(.hero-dot-v.active) {
-  background: var(--secondary);
+  background: var(--background);
   height: 35px;
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(255, 107, 53, 0.2);

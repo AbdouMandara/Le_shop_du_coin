@@ -6,7 +6,7 @@
         <img src="/logo ctec sarl.jpg" alt="logo de l'entreprise">
       </div>
       <!-- Search Bar Centrale -->
-      <div v-if="!authStore.isUser" class="header-search-container">
+      <div v-if="!authStore.isAdmin && !authStore.isLivreur" class="header-search-container">
         <div class="header-search-wrapper">
           <i class='bx bx-search search-icon'></i>
           <input 
@@ -238,7 +238,7 @@ const handleKeyDown = (e) => {
 }
 
 .header-logo img {
-  height: 45px;
+  height: 59px;
   width: auto;
   object-fit: contain;
   display: block;

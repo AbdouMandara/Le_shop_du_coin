@@ -42,9 +42,9 @@ export const useAuthStore = defineStore('auth', {
         async fetchUser() {
             try {
                 const response = await api.get('/user');
-                this.user = response.data;
+                this.user = response.data.data || response.data;
                 localStorage.setItem('isLoggedIn', 'true');
-                return response.data;
+                return this.user;
             } catch (error) {
                 this.user = null;
                 localStorage.removeItem('isLoggedIn');

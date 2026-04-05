@@ -15,7 +15,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        return response()->json($request->user()->load('role'));
+        return response()->json(new \App\Http\Resources\UserResource($request->user()->load('role')));
     }
 
     /**
@@ -65,7 +65,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profil mis à jour avec succès.',
-            'user'    => $user->load('role'),
+            'user'    => new \App\Http\Resources\UserResource($user->load('role')),
         ]);
     }
 }

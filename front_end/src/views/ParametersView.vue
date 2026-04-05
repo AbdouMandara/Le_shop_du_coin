@@ -116,7 +116,7 @@
           </div>
 
           <div class="section-divider">
-            <span>Changer le mot de passe</span>
+            <span>Changer le mot de passe (Optionnel)</span>
           </div>
 
           <div class="form-group">
