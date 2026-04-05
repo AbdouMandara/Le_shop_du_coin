@@ -16,6 +16,7 @@ class UserResource extends \Illuminate\Http\Resources\Json\JsonResource
             'role' => $this->whenLoaded('role', function() {
                 return $this->role->label;
             }),
+            'is_active'     => $this->is_active,
             'created_at' => $this->created_at,
         ];
     }

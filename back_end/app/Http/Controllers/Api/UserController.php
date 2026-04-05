@@ -19,7 +19,11 @@ class UserController extends Controller
             });
         }
 
-        return UserResource::collection($query->latest()->paginate(10));
+        if ($request->has('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        return UserResource::collection($query->latest()->paginate(20));
     }
 
     public function store(Request $request)
@@ -45,5 +49,13 @@ class UserController extends Controller
     {
         $user->delete();
         return response()->json(null, 204);
+    }
+
+    public function toggleActive(User $user)
+    {
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return new UserResource($user);
     }
 }

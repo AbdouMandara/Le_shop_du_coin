@@ -17,6 +17,11 @@ const router = createRouter({
       meta: { guest: true }
     },
     {
+      path: '/deactivated',
+      name: 'deactivated',
+      component: () => import('../views/DeactivatedAccountView.vue')
+    },
+    {
       path: '/',
       component: () => import('../layouts/MainLayout.vue'),
       children: [
@@ -69,6 +74,16 @@ router.beforeEach(async (to, from, next) => {
     await auth.fetchUser()
     // If fetchUser failed (session expired), isLoggedIn is already cleared
     // and auth.user remains null — no further calls will be made
+  }
+
+  // Intercept deactivated users immediately
+  if (auth.user && (auth.user.is_active === false || auth.user.is_active === 0)) {
+    if (to.name !== 'deactivated' && to.name !== 'login') {
+      return next({ name: 'deactivated' });
+    }
+  } else if (to.name === 'deactivated') {
+    // Active users shouldn't access the deactivated page
+    return next({ name: 'home' });
   }
 
   // Redirect authenticated users from landing page to their respective dashboards

@@ -5,9 +5,16 @@
         <h1>Gestion des Livreurs</h1>
         <p>Gérez les comptes des livreurs de la plateforme.</p>
       </div>
-      <button @click="showAddModal = true" class="btn-primary">
-        <i class='bx bx-plus'></i> Ajouter un Livreur
-      </button>
+      <div class="header-actions">
+        <select v-model="statusFilter" @change="fetchLivreurs" class="status-filter">
+          <option value="">Tous les statuts</option>
+          <option value="1">Actifs</option>
+          <option value="0">Désactivés</option>
+        </select>
+        <button @click="showAddModal = true" class="btn-primary">
+          <i class='bx bx-plus'></i> Ajouter un Livreur
+        </button>
+      </div>
     </header>
 
     <div v-if="loading" class="loading">
@@ -25,6 +32,7 @@
           <tr>
             <th>Nom</th>
             <th>Email</th>
+            <th>Statut</th>
             <th>Date d'inscription</th>
             <th>Actions</th>
           </tr>
@@ -33,15 +41,25 @@
           <tr v-for="livreur in livreurs" :key="livreur.id">
             <td>
               <div class="user-cell">
-                <div class="avatar">{{ livreur.name.charAt(0) }}</div>
+                <div class="avatar" :class="{ 'avatar-inactive': livreur.is_active === false || livreur.is_active === 0 }">{{ livreur.name.charAt(0) }}</div>
                 <span>{{ livreur.name }}</span>
               </div>
             </td>
             <td>{{ livreur.email }}</td>
+            <td>
+               <span class="status-badge" :class="livreur.is_active ? 'badge-active' : 'badge-inactive'">
+                  {{ livreur.is_active ? 'Actif' : 'Désactivé' }}
+               </span>
+            </td>
             <td>{{ formatDate(livreur.created_at) }}</td>
             <td>
-              <button @click="confirmDelete(livreur)" class="btn-icon btn-delete" title="Supprimer">
-                <i class='bx bx-trash'></i>
+              <button 
+                @click="toggleLivreurStatus(livreur)" 
+                class="btn-icon" 
+                :class="livreur.is_active ? 'btn-deactivate' : 'btn-activate'"
+                :title="livreur.is_active ? 'Désactiver' : 'Activer'"
+              >
+                <i :class="livreur.is_active ? 'bx bx-user-x' : 'bx bx-user-check'"></i>
               </button>
             </td>
           </tr>
@@ -91,6 +109,7 @@ const roles = ref([]);
 const loading = ref(true);
 const submitting = ref(false);
 const showAddModal = ref(false);
+const statusFilter = ref('');
 const notificationStore = useNotificationStore();
 
 // Empêcher le scroll du body quand le modal est ouvert
@@ -115,7 +134,11 @@ const newLivreur = ref({
 const fetchLivreurs = async () => {
     loading.value = true;
     try {
-        const response = await api.get('/admin/users?role=livreur');
+        let url = '/admin/users?role=livreur';
+        if (statusFilter.value !== '') {
+            url += `&is_active=${statusFilter.value}`;
+        }
+        const response = await api.get(url);
         livreurs.value = response.data.data;
     } catch (err) {
         console.error('Erreur lors du chargement des livreurs:', err);
@@ -155,14 +178,15 @@ const handleAddLivreur = async () => {
     }
 };
 
-const confirmDelete = async (livreur) => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${livreur.name} ?`)) {
+const toggleLivreurStatus = async (livreur) => {
+    const action = livreur.is_active ? 'désactiver' : 'activer';
+    if (confirm(`Êtes-vous sûr de vouloir ${action} le compte de ${livreur.name} ?`)) {
         try {
-            await api.delete(`/admin/users/${livreur.id}`);
+            await api.patch(`/admin/users/${livreur.id}/toggle-active`);
             await fetchLivreurs();
-            notificationStore.success('Livreur supprimé avec succès');
+            notificationStore.success(`Livreur ${action} avec succès`);
         } catch (err) {
-            notificationStore.error('Erreur lors de la suppression');
+            notificationStore.error(`Erreur lors de l'opération`);
         }
     }
 };
@@ -265,6 +289,36 @@ onMounted(async () => {
     font-size: 0.8rem;
 }
 
+.avatar-inactive {
+    background: #9ca3af;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-active { background: #E3FCEF; color: #00875A; }
+.badge-inactive { background: #fbe6e6; color: #d32f2f; }
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-filter {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+}
+
 .btn-icon {
     background: none;
     border: none;
@@ -272,10 +326,14 @@ onMounted(async () => {
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s;
+    font-size: 1.2rem;
 }
 
-.btn-delete { color: #ff4d4d; }
-.btn-delete:hover { background: #fff5f5; }
+.btn-deactivate { color: #f59e0b; }
+.btn-deactivate:hover { background: #fef3c7; color: #d97706; }
+
+.btn-activate { color: #10b981; }
+.btn-activate:hover { background: #d1fae5; color: #059669; }
 
 /* Modal */
 .modal-overlay {

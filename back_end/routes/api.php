@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Admin routes
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::apiResource('users', \App\Http\Controllers\Api\UserController::class);
+    Route::patch('/users/{user}/toggle-active', [\App\Http\Controllers\Api\UserController::class, 'toggleActive']);
     Route::get('/roles', function () {
         return response()->json(\App\Models\Role::all());
     });
