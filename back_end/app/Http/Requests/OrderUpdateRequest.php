@@ -14,7 +14,7 @@ class OrderUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'sometimes|string|in:pending,paid,in_transit,delivered,cancelled',
+            'status' => 'sometimes|string|in:pending,paid,in_transit,delivered,picked_up,cancelled',
             'delivery' => 'sometimes|string', // sometimes est une méthode qui permet de dire que si ce champ est présent je lui applique les conditions de validation comme dans notre cadre c'est string, et si ce champ n'est pas envoyé ça ne dérange pas
             'payment_date' => 'sometimes|date',
         ];

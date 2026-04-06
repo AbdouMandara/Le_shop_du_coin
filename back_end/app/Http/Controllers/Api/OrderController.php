@@ -72,11 +72,26 @@ class OrderController extends Controller
         $user = $request->user();
         
         // Admin or Livreur can update status
-        if (!in_array($user->role->label, ['admin', 'livreur'])) {
+        // Client can update status ONLY if it's their own order and the new status is 'delivered' or 'picked_up'
+        $isAuthorized = in_array($user->role->label, ['admin', 'livreur']) || 
+                      ($user->role->label === 'client' && $order->user_id === $user->id && in_array($request->status, ['delivered', 'picked_up']));
+
+        if (!$isAuthorized) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $oldStatus = $order->status;
         $order->update($request->validated());
+
+        // Stock Decrement Logic
+        // If transitioning to a final state (delivered or picked_up) AND not already there
+        if (in_array($order->status, ['delivered', 'picked_up']) && !in_array($oldStatus, ['delivered', 'picked_up'])) {
+            $product = $order->product;
+            if ($product) {
+                // Ensure we don't go below 0 (optional based on preference, but safe)
+                $product->decrement('quantity', 1);
+            }
+        }
 
         // Notify client about status change
         if ($request->has('status')) {
@@ -121,18 +136,32 @@ class OrderController extends Controller
         $status = $validatedData['status'];
         $ids = $validatedData['ids'];
 
-        // Get orders with users to notify
-        $orders = Order::whereIn('id', $ids)->with('user')->get();
+        // Get orders with users to notify and products for stock
+        $orders = Order::whereIn('id', $ids)->with(['user', 'product'])->get();
         
         // Update all statuses
-        Order::whereIn('id', $ids)->update(['status' => $status]);
-
-        // Notifications
+        // Note: For bulk update, we check if we need to decrement stock for each order
         $messages = [
             'in_transit' => 'Votre commande est en cours de livraison.',
             'delivered' => 'Votre commande a été livrée.',
+            'picked_up' => 'Votre commande a été récupérée.',
             'cancelled' => 'Votre commande a été annulée.'
         ];
+
+        foreach ($orders as $order) {
+            $oldStatus = $order->status;
+            if ($oldStatus !== $status) {
+                $order->status = $status;
+                $order->save();
+                
+                // Decrement stock if transitioning to final state
+                if (in_array($status, ['delivered', 'picked_up']) && !in_array($oldStatus, ['delivered', 'picked_up'])) {
+                    if ($order->product) {
+                        $order->product->decrement('quantity', 1);
+                    }
+                }
+            }
+        }
 
         if (isset($messages[$status])) {
             // Group by user_id to send only ONE notification per client

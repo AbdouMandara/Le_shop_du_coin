@@ -26,6 +26,26 @@ export const useCartStore = defineStore('cart', {
         },
         saveCart() {
             localStorage.setItem('cart', JSON.stringify(this.items));
+        },
+        async validateCart() {
+            try {
+                // Fetch current active products to see what's still available
+                const response = await api.get('/products');
+                const availableProducs = response.data.data || response.data;
+                const availableIds = availableProducs.map(p => p.id);
+                
+                const originalCount = this.items.length;
+                this.items = this.items.filter(item => availableIds.includes(item.id));
+                
+                if (this.items.length !== originalCount) {
+                    this.saveCart();
+                    return true; // Returns true if some items were removed
+                }
+                return false;
+            } catch (err) {
+                console.error("Cart validation failed", err);
+                return false;
+            }
         }
     }
 });

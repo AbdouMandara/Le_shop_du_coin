@@ -218,7 +218,13 @@ const shopLocation = ref([4.038026, 9.741443]);// longitude et lagitude de la bo
 const center = ref([4.038026, 9.741443]);
 const marker = ref(null); 
 
-onMounted(() => {
+onMounted(async () => {
+    // Validate cart items to remove deleted products
+    const removedSomething = await cartStore.validateCart();
+    if (removedSomething) {
+        alert("Certains articles n'étant plus disponibles, ils ont été retirés de votre panier.");
+    }
+
     if (cartStore.items.length === 0) {
         router.push('/client/cart');
     }

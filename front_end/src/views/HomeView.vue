@@ -8,7 +8,14 @@
       
       <div v-else-if="productStore.promotionalProducts.length > 0" class="hero-container container">
 
-        <!-- Marquee Produit en solde -->
+        <!-- Info Marquee (Gold) -->
+        <div class="info-marquee">
+          <div class="marquee-content">
+            <span v-for="n in 10" :key="n"> 📞 Commander rapidement : 678457755 / 694609232 📞 </span>
+          </div>
+        </div>
+
+        <!-- Promo Marquee (Transparent) -->
         <div class="promo-marquee">
           <div class="marquee-content">
             <span v-for="n in 10" :key="n"> 🔥 Produit en solde -20% 🔥 </span>
@@ -418,10 +425,28 @@ watch(activeCategory, () => {
 }
 
 /* Marquee Styling */
+.info-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #FFD100, #FFC107);
+  padding: 0.6rem 0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  box-shadow: 0 4px 15px rgba(255, 209, 0, 0.4);
+  z-index: 100;
+  position: relative;
+}
+
+.info-marquee .marquee-content span {
+  color: #000;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
 .promo-marquee {
   overflow: hidden;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05); /* Lighter translucent background */
   padding: 0.5rem 0;
   margin-bottom: 1.5rem;
   display: flex;

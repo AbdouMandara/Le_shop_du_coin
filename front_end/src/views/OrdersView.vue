@@ -107,8 +107,7 @@
                   <template v-if="group.status !== 'delivered' && group.status !== 'cancelled'">
                       <select :value="group.status" @change="updateGroupStatus(group, $event.target.value)" class="status-select">
                           <option value="paid" :disabled="group.status !== 'paid'">Nouvelle (Payée)</option>
-                          <option value="in_transit" :disabled="group.status === 'in_transit' || group.status === 'delivered'">En cours de livraison</option>
-                          <option value="delivered">Livrée (Terminé)</option>
+                          <option value="in_transit" :disabled="group.status === 'in_transit' || group.status === 'delivered' || group.status === 'picked_up'">En cours de livraison</option>
                       </select>
                   </template>
                   <template v-else-if="group.status === 'delivered'">
@@ -147,6 +146,17 @@
               >
                  <i class='bx bx-show'></i> Détails
               </button>
+
+              <!-- Confirmation Button for Client -->
+              <button 
+                 v-if="['paid', 'in_transit'].includes(group.status)"
+                 @click="confirmGroupReception(group)" 
+                 class="btn-confirm-reception"
+                 title="Confirmer la réception de la commande"
+              >
+                 <i class='bx bx-check-circle'></i> {{ group.delivery ? 'Confirmer la réception' : 'Confirmer le retrait' }}
+              </button>
+
               <button 
                  @click="downloadInvoice(group.items[0].id)" 
                  class="btn-download-minimal"
@@ -366,15 +376,22 @@ const formatStatus = (status) => {
         paid: 'Payée',
         in_transit: 'En cours',
         delivered: 'Livrée',
+        picked_up: 'Récupérée',
         cancelled: 'Annulée'
     };
     return statuses[status] || status;
 };
 
 const getClientStatus = (group) => {
-    if (!group.delivery) return "Commandée";
-    if (group.status === 'delivered') return "Livrée";
-    return "En cours de livraison";
+    if (group.status === 'cancelled') return "Annulée";
+    if (group.status === 'delivered') return "Livrée (Terminé)";
+    if (group.status === 'picked_up') return "Récupérée (Terminé)";
+    
+    if (!group.delivery) return "Prête pour retrait"; // If paid but not delivered
+    if (group.status === 'paid' && group.delivery) return "En attente d'expédition";
+    if (group.status === 'in_transit') return "En cours de livraison";
+    
+    return formatStatus(group.status);
 };
 
 const activeFiltersCount = computed(() => {
@@ -473,6 +490,25 @@ const updateGroupStatus = async (group, status) => {
         await orderStore.updateOrdersStatusBulk(ids, status);
     } catch (err) {
         alert("Erreur lors de la mise à jour du statut");
+    }
+};
+
+const confirmGroupReception = async (group) => {
+    const finalStatus = group.delivery ? 'delivered' : 'picked_up';
+    const confirmMsg = group.delivery 
+        ? "Confirmez-vous avoir bien reçu votre livraison ?" 
+        : "Confirmez-vous avoir bien récupéré vos produits ?";
+    
+    if (!confirm(confirmMsg)) return;
+
+    try {
+        const ids = group.items.map(o => o.id);
+        await orderStore.updateOrdersStatusBulk(ids, finalStatus);
+        alert("Merci ! Votre commande est maintenant marquée comme terminée.");
+        await orderStore.fetchOrders();
+    } catch (err) {
+        console.error(err);
+        alert("Erreur lors de la confirmation");
     }
 };
 
@@ -1101,6 +1137,32 @@ const downloadInvoice = async (orderId) => {
   border-color: var(--primary);
   color: var(--primary);
 }
+
+.btn-confirm-reception {
+  flex: 1.5;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: white;
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 10px rgba(255, 107, 53, 0.2);
+}
+
+.btn-confirm-reception:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(255, 107, 53, 0.3);
+}
+
+.status-badge.picked_up { background: #F3E5F5; color: #7B1FA2; }
 
 @media (max-width: 768px) {
   .client-list {

@@ -142,7 +142,6 @@ onUnmounted(() => {
 }
 
 .cart-btn:hover {
-  transform: translateY(-5px) scale(1.05);
   background: var(--secondary);
 }
 

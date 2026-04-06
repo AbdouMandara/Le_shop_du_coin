@@ -148,20 +148,21 @@ const getStarClass = (index, rating) => {
 
 .product-card__favorite {
   position: absolute;
-  top: 22px;
-  right: 22px;
-  background-color: #FFFFFF;
-  border: 1px solid var(--border);
-  width: 36px;
-  height: 36px;
+  top: 15px;
+  right: 15px;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: #888;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 50; /* Ensure it is above other elements */
+  transition: all 0.2s ease;
 }
 
 .product-card__favorite:hover {
