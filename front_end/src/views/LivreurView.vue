@@ -62,7 +62,7 @@ const groupedOrders = computed(() => {
     // Filter orders based on active tab
     const filteredOrders = orderStore.orders.filter(order => {
         if (activeTab.value === 'new') {
-            return order.status === 'paid' || order.status === 'in_transit';
+            return order.status === 'pending' || order.status === 'paid' || order.status === 'in_transit';
         } else {
             return order.status === 'delivered';
         }

@@ -106,7 +106,8 @@
               <template v-if="authStore.isLivreur">
                   <template v-if="group.status !== 'delivered' && group.status !== 'cancelled'">
                       <select :value="group.status" @change="updateGroupStatus(group, $event.target.value)" class="status-select">
-                          <option value="paid" :disabled="group.status !== 'paid'">Nouvelle (Payée)</option>
+                          <option value="pending" :disabled="group.status !== 'pending'">Nouvelle (En attente)</option>
+                          <option value="paid" :disabled="group.status !== 'paid' && group.status !== 'pending'">Nouvelle (Payée)</option>
                           <option value="in_transit" :disabled="group.status === 'in_transit' || group.status === 'delivered' || group.status === 'picked_up'">En cours de livraison</option>
                       </select>
                   </template>
