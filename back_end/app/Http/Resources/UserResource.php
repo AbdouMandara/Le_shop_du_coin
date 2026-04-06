@@ -10,9 +10,12 @@ class UserResource extends \Illuminate\Http\Resources\Json\JsonResource
             'id'            => $this->id,
             'name'          => $this->name,
             'email'         => $this->email,
-            'profile_photo' => $this->profile_photo
-                                ? asset('storage/' . $this->profile_photo)
-                                : null,
+            'profile_photo' => ($this->profile_photo && str_starts_with($this->profile_photo, 'http'))
+                                ? $this->profile_photo
+                                : ($this->profile_photo ? asset('storage/' . $this->profile_photo) : null),
+            'photo'         => ($this->profile_photo && str_starts_with($this->profile_photo, 'http'))
+                                ? $this->profile_photo
+                                : ($this->profile_photo ? asset('storage/' . $this->profile_photo) : null),
             'role' => $this->whenLoaded('role', function() {
                 return $this->role->label;
             }),

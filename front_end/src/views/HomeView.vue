@@ -76,36 +76,6 @@
       </div>
     </section>
 
-    <!-- VALUE PROPOSITION (Plus-value) -->
-    <!-- <section class="usp-section">
-      <div class="container">
-        <div class="usp-grid">
-          <div class="usp-item">
-            <div class="usp-icon-wrapper"><i class='bx bx-rocket'></i></div>
-            <div class="usp-content">
-              <h3>Livraison Express</h3>
-              <p>Partout au Cameroun en 24/48h.</p>
-            </div>
-          </div>
-          <div class="usp-item">
-            <div class="usp-icon-wrapper"><i class='bx bx-shield-quarter'></i></div>
-            <div class="usp-content">
-              <h3>Sécurité Garantie</h3>
-              <p>Paiements mobiles 100% sécurisés.</p>
-            </div>
-          </div>
-          <div class="usp-item">
-            <div class="usp-icon-wrapper"><i class='bx bx-support'></i></div>
-            <div class="usp-content">
-              <h3>Support 24/7</h3>
-              <p>Conseillers à votre écoute au quotidien.</p>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    </section> -->
-
     <!-- PRODUCT DISCOVERY SECTION -->
     <section id="discovery" class="discovery-section">
       <div class="container">
@@ -247,10 +217,6 @@ const productsUrl = computed(() => {
     return '/products';
 });
 
-// --- REMOVED OBSOLETE CAROUSEL LOGIC ---
-
-
-// --- REMOVED OBSOLETE AUTOPLAY LOGIC ---
 
 // --- PRODUCT DISCOVERY LOGIC ---
 const activeCategory = ref('all');
@@ -318,7 +284,7 @@ const formatPrice = (price) => {
 const getProductImage = (path) => {
     if (!path) return 'https://placehold.co/1200x600?text=Produit';
     if (path.startsWith('http')) return path;
-    return `/storage/${path}`;
+    return `back_end/storage/app/public/${path}`;
 };
 
 const handleImgError = (e) => {
@@ -456,7 +422,6 @@ watch(activeCategory, () => {
   overflow: hidden;
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
   padding: 0.5rem 0;
   margin-bottom: 1.5rem;
   display: flex;

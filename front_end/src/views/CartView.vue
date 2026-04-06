@@ -21,8 +21,8 @@
             <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
                 <img :src="item.image ? (item.image.startsWith('http') ? item.image : `/storage/${item.image}`) : 'https://placehold.co/100x100?text=Produit'" :alt="item.name" />
                 <div class="cart-item__info">
-                    <h4>{{ item.name }}</h4>
-                    <p>{{ formatPrice(item.price) }} FCFA</p>
+                    <h4>{{ item.name }} ({{(formatPrice(item.price))}} FCFA / Unité)</h4>
+                    <p>{{ formatPrice(item.price * item.quantity) }} FCFA</p>
                 </div>
                 <div class="cart-item__quantity">
                     <span>Quantité: <strong>{{ item.quantity }}</strong></span>

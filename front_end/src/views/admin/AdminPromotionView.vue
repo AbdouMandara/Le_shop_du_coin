@@ -113,7 +113,7 @@
               <label>Type de réduction</label>
               <select v-model="promoForm.type" required>
                 <option value="percentage">Pourcentage (%)</option>
-                <option value="fixed">Montant fixe (€)</option>
+                <option value="fixed">Montant fixe (FCFA)</option>
               </select>
             </div>
             <div class="form-group">

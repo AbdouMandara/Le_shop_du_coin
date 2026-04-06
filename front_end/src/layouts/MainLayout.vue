@@ -25,26 +25,114 @@
       <!-- Navigation tabs -->
       <nav v-if="authStore.isAuthenticated" class="header-nav-container">
         <div class="header-nav-icons">
-          <router-link 
-            v-for="link in navLinks" 
-            :key="link.path" 
-            :to="link.path"
-            class="header-icon-link"
-            :title="link.label"
-          >
-            <div class="icon-wrapper">
-              <i :class="link.icon"></i>
-              <!-- Badge Panier -->
-              <span v-if="link.id === 'cart' && cartTotalCount > 0" class="cart-badge">
-                {{ cartTotalCount }}
-              </span>
-              <!-- Badge Notifications -->
-              <span v-if="link.id === 'notifications' && notifStore.unreadCount > 0" class="notif-badge">
-                {{ notifStore.unreadCount }}
-              </span>
+          <template v-for="link in navLinks" :key="link.path">
+            <!-- Normal Links -->
+            <router-link 
+              v-if="link.id !== 'cart' && link.id !== 'favorites'"
+              :to="link.path"
+              class="header-icon-link"
+              :title="link.label"
+            >
+              <div class="icon-wrapper">
+                <i :class="link.icon"></i>
+                <span v-if="link.id === 'notifications' && notifStore.unreadCount > 0" class="notif-badge">
+                  {{ notifStore.unreadCount }}
+                </span>
+              </div>
+              <span class="link-label">{{ link.label }}</span>
+            </router-link>
+
+            <!-- Favorites Dropdown -->
+            <div 
+              v-else-if="link.id === 'favorites'" 
+              class="header-dropdown-wrapper"
+              @mouseenter="showFavDropdown = true"
+              @mouseleave="showFavDropdown = false"
+            >
+              <router-link :to="link.path" class="header-icon-link" :title="link.label">
+                <div class="icon-wrapper">
+                  <i :class="link.icon"></i>
+                  <span v-if="favStore.count > 0" class="fav-badge">{{ favStore.count }}</span>
+                </div>
+                <span class="link-label">{{ link.label }}</span>
+              </router-link>
+              
+              <transition name="slide-up">
+                <div v-if="showFavDropdown" class="quick-view-dropdown">
+                  <div class="dropdown-header">
+                    <h4>Mes Favoris ({{ favStore.count }})</h4>
+                  </div>
+                  <div class="dropdown-body">
+                    <div v-if="favoriteProducts.length > 0" class="mini-product-list">
+                      <div v-for="p in favoriteProducts.slice(0, 5)" :key="p.id" class="mini-product-card" @click="router.push(`/product/${p.id}`)">
+                        <img :src="getImageUrl(p.image)" :alt="p.name">
+                        <div class="mini-product-info">
+                          <span class="mini-name">{{ p.name }}</span>
+                          <span class="mini-price">{{ formatPrice(p.price) }} FCFA</span>
+                        </div>
+                      </div>
+                      <div v-if="favoriteProducts.length > 5" class="more-items-info">+ {{ favoriteProducts.length - 5 }} autres</div>
+                    </div>
+                    <div v-else class="dropdown-empty">
+                      <i class='bx bx-heart'></i>
+                      <p>Aucun favori pour le moment</p>
+                    </div>
+                  </div>
+                  <div class="dropdown-footer">
+                    <router-link :to="link.path" class="btn-view-all">Voir tout mes favoris</router-link>
+                  </div>
+                </div>
+              </transition>
             </div>
-            <span class="link-label">{{ link.label }}</span>
-          </router-link>
+
+            <!-- Cart Dropdown -->
+            <div 
+              v-else-if="link.id === 'cart'" 
+              class="header-dropdown-wrapper"
+              @mouseenter="showCartDropdown = true"
+              @mouseleave="showCartDropdown = false"
+            >
+              <router-link :to="link.path" class="header-icon-link" :title="link.label">
+                <div class="icon-wrapper">
+                  <i :class="link.icon"></i>
+                  <span v-if="cartTotalCount > 0" class="cart-badge">{{ cartTotalCount }}</span>
+                </div>
+                <span class="link-label">{{ link.label }}</span>
+              </router-link>
+
+              <transition name="slide-up">
+                <div v-if="showCartDropdown" class="quick-view-dropdown">
+                  <div class="dropdown-header">
+                    <h4>Mon Panier ({{ cartTotalCount }})</h4>
+                  </div>
+                  <div class="dropdown-body">
+                    <div v-if="cartStore.items.length > 0" class="mini-product-list">
+                      <div v-for="item in cartStore.items.slice(0, 5)" :key="item.id" class="mini-product-card" @click="router.push('/client/cart')">
+                        <img :src="getImageUrl(item.image)" :alt="item.name">
+                        <div class="mini-product-info">
+                          <span class="mini-name">{{ item.name }}</span>
+                          <span class="mini-price">{{ item.quantity }} x {{ formatPrice(item.price) }} FCFA</span>
+                        </div>
+                      </div>
+                      <div v-if="cartStore.items.length > 5" class="more-items-info">+ {{ cartStore.items.length - 5 }} articles</div>
+                      <div class="total-preview">
+                        <span>Total :</span>
+                        <strong>{{ formatPrice(cartStore.totalPrice) }} FCFA</strong>
+                      </div>
+                    </div>
+                    <div v-else class="dropdown-empty">
+                      <i class='bx bx-cart'></i>
+                      <p>Votre panier est vide</p>
+                    </div>
+                  </div>
+                  <div class="dropdown-footer">
+                    <router-link :to="link.path" class="btn-view-all">Aller au panier</router-link>
+                    <button v-if="cartStore.items.length > 0" @click="router.push('/client/checkout')" class="btn-checkout">Commander</button>
+                  </div>
+                </div>
+              </transition>
+            </div>
+          </template>
         </div>
       </nav>
 
@@ -107,18 +195,38 @@ import { useUserNotificationsStore } from '@/stores/userNotifications';
 import { useProductStore } from '@/stores/products';
 import { useRouter } from 'vue-router';
 
+import { useFavoritesStore } from '@/stores/favorites';
+
 const themeStore = useThemeStore();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+const favStore = useFavoritesStore();
 const productStore = useProductStore();
 const notifStore = useUserNotificationsStore();
 const router = useRouter();
+
+const showFavDropdown = ref(false);
+const showCartDropdown = ref(false);
+
+const favoriteProducts = computed(() => {
+    return productStore.products.filter(p => favStore.isFavorite(p.id));
+});
+
+const getImageUrl = (path) => {
+    if (!path) return 'https://placehold.co/100x100?text=Produit';
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8000/storage/${path}`;
+};
+
+const formatPrice = (price) => {
+    return new Intl.NumberFormat('fr-FR').format(price);
+};
 
 const searchInputRef = ref(null);
 
 const clientLinks = [
   { label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' },
-  { label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart' },
+  { label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart', id: 'favorites' },
   { label: 'Commandes', path: '/client/orders', icon: 'bx bx-package' },
   { label: 'Notifications', path: '/client/notifications', icon: 'bx bx-bell', id: 'notifications' },
   { label: 'Panier', path: '/client/cart', icon: 'bx bx-cart', id: 'cart' },
@@ -594,5 +702,209 @@ const handleKeyDown = (e) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+/* Quick View Dropdowns */
+.header-dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.quick-view-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: -50px;
+  width: 320px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  z-index: 2000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--background);
+}
+
+.dropdown-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dropdown-body {
+  padding: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.mini-product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mini-product-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mini-product-card:hover {
+  background-color: var(--neutral);
+}
+
+.mini-product-card img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: var(--background);
+}
+
+.mini-product-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.mini-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-price {
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.more-items-info {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+}
+
+.total-preview {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-preview span { font-size: 0.9rem; color: #666; }
+.total-preview strong { font-size: 1rem; color: var(--text); }
+
+.dropdown-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #ccc;
+}
+
+.dropdown-empty i {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.3;
+}
+
+.dropdown-empty p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.dropdown-footer {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: var(--background);
+  border-top: 1px solid var(--border);
+}
+
+.btn-view-all {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 8px;
+  background-color: var(--neutral);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.btn-view-all:hover {
+  background-color: var(--border);
+}
+
+.btn-checkout {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.btn-checkout:hover {
+  filter: brightness(1.1);
+}
+
+.fav-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: var(--primary);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 8px;
+    min-width: 15px;
+    max-height: 15px;
+    text-align: center;
+    border: 1.5px solid var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

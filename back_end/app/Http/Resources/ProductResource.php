@@ -15,7 +15,7 @@ class ProductResource extends \Illuminate\Http\Resources\Json\JsonResource
             'active_promotion' => $this->active_promotion,
             'quantity' => $this->quantity,
             'description' => $this->description,
-            'image' => $this->image,
+            'image' => (str_starts_with($this->image, 'http')) ? $this->image : ($this->image ? asset('storage/' . $this->image) : null),
             'category_id' => $this->category_id,
             'category' => new CategoryResource($this->whenLoaded('category')),
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
