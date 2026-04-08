@@ -224,8 +224,26 @@ class OrderController extends Controller
         return new OrderResource($order);
     }
 
-    public function downloadInvoice(Order $order)
+    public function downloadInvoice(Request $request, Order $order)
     {
+        $user = $request->user();
+        $userRole = strtolower($user->role->label);
+
+        // Client/User restriction
+        if (in_array($userRole, ['user', 'client'])) {
+            if ($order->user_id !== $user->id) {
+                return response()->json(['message' => 'Action non autorisée.'], 403);
+            }
+
+            if (!in_array($order->status, ['delivered', 'picked_up'])) {
+                return response()->json([
+                    'message' => 'Vous ne pouvez imprimer la facture que lorsque la commande est déjà récupérée ou livrée.'
+                ], 403);
+            }
+        }
+        
+        // Admin skips the above check and can print regardless of status
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('order'));
         return $pdf->download("facture-{$order->id}.pdf");
     }
