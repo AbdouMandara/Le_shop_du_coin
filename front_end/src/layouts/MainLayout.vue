@@ -137,6 +137,16 @@
       </nav>
 
       <div class="header-actions">
+        <a 
+          v-if="showHelp" 
+          href="https://wa.me/237678457755" 
+          target="_blank" 
+          class="help-wa-link"
+          title="Besoin d'aide ? Contactez-nous sur WhatsApp"
+        >
+          <i class='bx bxl-whatsapp'></i>
+        </a>
+
         <template v-if="!authStore.isAuthenticated">
           <router-link to="/login" class="header-auth-btn header-login-btn">Connexion</router-link>
           <router-link to="/register" class="header-auth-btn header-register-btn">Inscription</router-link>
@@ -193,7 +203,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { useUserNotificationsStore } from '@/stores/userNotifications';
 import { useProductStore } from '@/stores/products';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 import { useFavoritesStore } from '@/stores/favorites';
 
@@ -204,6 +214,12 @@ const favStore = useFavoritesStore();
 const productStore = useProductStore();
 const notifStore = useUserNotificationsStore();
 const router = useRouter();
+const route = useRoute();
+
+const showHelp = computed(() => {
+    // Show only on home page OR client paths
+    return route.name === 'home' || route.path.startsWith('/client');
+});
 
 const showFavDropdown = ref(false);
 const showCartDropdown = ref(false);
@@ -416,6 +432,37 @@ const handleKeyDown = (e) => {
 .header-register-btn:hover {
   filter: brightness(0.9);
   border-color: var(--primary);
+}
+
+/* WhatsApp Help Link */
+.help-wa-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background-color: #25D366;
+  color: white !important;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+}
+
+
+
+.help-wa-link i {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .help-wa-link {
+    width: 34px;
+    height: 34px;
+  }
+  .help-wa-link i {
+    font-size: 1.3rem;
+  }
 }
 
 /* Search Bar Centrale */
