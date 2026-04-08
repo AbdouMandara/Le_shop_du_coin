@@ -43,12 +43,13 @@ class OrderController extends Controller
             }
         }
 
-        // Return all for client, paginated for others
-        if ($user->role->label === 'client') {
+        // Return all for client/user and admin if pagination is not handled in frontend
+        $userLabel = strtolower($user->role->label);
+        if (in_array($userLabel, ['client', 'user', 'admin'])) {
             return OrderResource::collection($query->get());
         }
 
-        return OrderResource::collection($query->paginate(10));
+        return OrderResource::collection($query->paginate(20));
     }
 
     public function store(OrderRequest $request)
