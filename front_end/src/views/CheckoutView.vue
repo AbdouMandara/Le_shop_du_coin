@@ -82,8 +82,14 @@
                   <l-tooltip>Votre adresse de livraison</l-tooltip>
               </l-marker>
               
-              <!-- Distance Line -->
-              <l-polyline v-if="marker" :lat-lngs="[shopLocation, marker]" color="#FF5722" :weight="3" dashArray="10, 10"></l-polyline>
+              <!-- Distance Line (Follows roads if available) -->
+              <l-polyline 
+                v-if="marker" 
+                :lat-lngs="routeCoordinates.length > 0 ? routeCoordinates : [shopLocation, marker]" 
+                color="#FF5722" 
+                :weight="4" 
+                dashArray="5, 10"
+              ></l-polyline>
             </l-map>
           </div>
 
@@ -195,10 +201,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useCartStore } from '@/stores/cart';
 import { useOrderStore } from '@/stores/orders';
 import { useRouter } from 'vue-router';
+import { getRoute } from '@/services/routing';
 
 // Leaflet imports
 import "leaflet/dist/leaflet.css";
@@ -235,6 +242,31 @@ const searching = ref(false);
 const shopLocation = ref([4.038026, 9.741443]);// longitude et lagitude de la boutique
 const center = ref([4.038026, 9.741443]);
 const marker = ref(null); 
+const routeCoordinates = ref([]);
+const roadDistance = ref(null);
+
+const fetchRoadRoute = async () => {
+    if (!marker.value) {
+        routeCoordinates.value = [];
+        roadDistance.value = null;
+        return;
+    }
+    
+    // Fetch road itinerary from OSRM
+    const routeData = await getRoute(shopLocation.value, [marker.value.lat, marker.value.lng]);
+    if (routeData) {
+        routeCoordinates.value = routeData.coordinates;
+        roadDistance.value = routeData.distance.toFixed(2);
+    } else {
+        // Fallback to straight line
+        routeCoordinates.value = [shopLocation.value, [marker.value.lat, marker.value.lng]];
+        roadDistance.value = null;
+    }
+};
+
+watch(marker, () => {
+    fetchRoadRoute();
+});
 
 const searchLocation = async () => {
     if (!searchQuery.value.trim()) return;
@@ -279,8 +311,9 @@ const onMapClick = (e) => {
     marker.value = e.latlng;
 };
 
-// Calculate distance in KM using Leaflet's built in distanceTo
+// Use road distance if available, otherwise fallback to straight line calculation
 const distanceKm = computed(() => {
+    if (roadDistance.value) return roadDistance.value;
     if (!marker.value) return null;
     const shopPoint = L.latLng(shopLocation.value[0], shopLocation.value[1]);
     const userPoint = L.latLng(marker.value.lat, marker.value.lng);

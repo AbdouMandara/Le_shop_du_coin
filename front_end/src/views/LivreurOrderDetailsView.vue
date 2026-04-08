@@ -82,8 +82,13 @@
                             <l-tooltip>Client (Arrivée)</l-tooltip>
                         </l-marker>
 
-                        <!-- Trajet Line (Live path if tracking, else static) -->
-                        <l-polyline :lat-lngs="[currentLocation || shopLocation, [deliveryLocation.lat, deliveryLocation.lng]]" color="#FF5722" :weight="3" dashArray="10, 10"></l-polyline>
+                        <!-- Trajet Line (Follows roads live) -->
+                        <l-polyline 
+                           :lat-lngs="routeCoordinates.length > 0 ? routeCoordinates : [currentLocation || shopLocation, [deliveryLocation.lat, deliveryLocation.lng]]" 
+                           color="#FF5722" 
+                           :weight="4" 
+                           dashArray="5, 10"
+                        ></l-polyline>
                     </l-map>
                  </div>
             </template>
@@ -101,6 +106,7 @@
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOrderStore } from '@/stores/orders';
+import { getRoute } from '@/services/routing';
 
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LPolyline, LTooltip, LIcon } from "@vue-leaflet/vue-leaflet";
@@ -127,7 +133,26 @@ const orderId = ref(route.params.id);
 const zoom = ref(13);
 const shopLocation = ref([4.038026, 9.741443]); // coord fixe boutique
 const currentLocation = ref(null);
+const routeCoordinates = ref([]);
 const watchPositionId = ref(null);
+
+const fetchRoadRoute = async () => {
+    const start = currentLocation.value || shopLocation.value;
+    if (!start || !deliveryLocation.value) return;
+
+    const data = await getRoute(start, [deliveryLocation.value.lat, deliveryLocation.value.lng]);
+    if (data) {
+        routeCoordinates.value = data.coordinates;
+    } else {
+        // Fallback to straight line
+        routeCoordinates.value = [start, [deliveryLocation.value.lat, deliveryLocation.value.lng]];
+    }
+};
+
+// Update route when position changes
+watch([currentLocation, deliveryLocation], () => {
+    fetchRoadRoute();
+}, { immediate: true });
 
 const mapCenter = computed(() => {
     if (currentLocation.value && deliveryLocation.value) {
