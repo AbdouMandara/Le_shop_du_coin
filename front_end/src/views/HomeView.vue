@@ -9,11 +9,11 @@
       <div v-else-if="productStore.promotionalProducts.length > 0" class="hero-container container">
 
         <!-- Info Marquee (Gold) -->
-        <div class="info-marquee">
+        <!-- <div class="info-marquee">
           <div class="marquee-content">
             <span v-for="n in 10" :key="n"> 📞 Commander rapidement : 678457755 / 694609232 📞 </span>
           </div>
-        </div>
+        </div> -->
 
         <!-- Promo Marquee (Transparent) -->
         <div class="promo-marquee">
