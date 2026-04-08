@@ -50,6 +50,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/products/{product}/promotions/{promotion}', [PromotionController::class, 'assignToProduct']);
     Route::delete('/products/{product}/promotions/{promotion}', [PromotionController::class, 'removeFromProduct']);
     Route::get('/newsletters', [\App\Http\Controllers\Api\NewsletterController::class, 'index']);
+    Route::get('/orders/{order}/invoice', [\App\Http\Controllers\Api\OrderController::class, 'downloadInvoice']);
 });
 
 // Livreur routes
@@ -59,6 +60,7 @@ Route::middleware(['auth:sanctum', 'role:livreur'])->prefix('livreur')->group(fu
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
     Route::patch('/orders/bulk-status-update', [\App\Http\Controllers\Api\OrderController::class, 'bulkStatusUpdate']);
     Route::patch('/orders/{order}', [\App\Http\Controllers\Api\OrderController::class, 'update']);
+    Route::get('/orders/{order}/invoice', [\App\Http\Controllers\Api\OrderController::class, 'downloadInvoice']);
 });
 
 // User (Client) routes
