@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Public routes
+Route::post('/newsletter/subscribe', [\App\Http\Controllers\Api\NewsletterController::class, 'store']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/promotional', [ProductController::class, 'promotional']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
@@ -48,6 +49,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::apiResource('promotions', PromotionController::class);
     Route::post('/products/{product}/promotions/{promotion}', [PromotionController::class, 'assignToProduct']);
     Route::delete('/products/{product}/promotions/{promotion}', [PromotionController::class, 'removeFromProduct']);
+    Route::get('/newsletters', [\App\Http\Controllers\Api\NewsletterController::class, 'index']);
 });
 
 // Livreur routes
@@ -68,6 +70,7 @@ Route::middleware(['auth:sanctum', 'role:user'])->prefix('client')->group(functi
 
     
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index']);
+    Route::patch('/orders/bulk-status-update', [\App\Http\Controllers\Api\OrderController::class, 'bulkStatusUpdate']);
     Route::post('/orders', [\App\Http\Controllers\Api\OrderController::class, 'store']);
     Route::get('/orders/{order}/invoice', [\App\Http\Controllers\Api\OrderController::class, 'downloadInvoice']);
 

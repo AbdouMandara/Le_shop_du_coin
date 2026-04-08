@@ -97,6 +97,7 @@ class OrderController extends Controller
         if ($request->has('status')) {
             $messages = [
                 'in_transit' => 'Votre commande est en cours de livraison.',
+                'arrived' => 'Votre commande est arrivée ! vous pouvez confirmer la réception.',
                 'delivered' => 'Votre commande a été livrée.',
                 'cancelled' => 'Votre commande a été annulée.'
             ];
@@ -123,8 +124,11 @@ class OrderController extends Controller
     public function bulkStatusUpdate(Request $request)
     {
         $user = $request->user();
-        if (!in_array($user->role->label, ['admin', 'livreur'])) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        $userRole = strtolower($user->role->label);
+
+        // Allowed roles: admin, livreur, user (client)
+        if (!in_array($userRole, ['admin', 'livreur', 'user', 'client'])) {
+            return response()->json(['message' => 'Unauthorized role: ' . $userRole], 403);
         }
 
         $validatedData = $request->validate([
@@ -136,13 +140,28 @@ class OrderController extends Controller
         $status = $validatedData['status'];
         $ids = $validatedData['ids'];
 
-        // Get orders with users to notify and products for stock
-        $orders = Order::whereIn('id', $ids)->with(['user', 'product'])->get();
+        // Protect against unauthorized status changes by non-privileged users
+        if (in_array($userRole, ['user', 'client']) && !in_array($status, ['delivered', 'picked_up'])) {
+            return response()->json(['message' => 'Unauthorized status change for ' . $userRole], 403);
+        }
+
+        // Get orders, restricting to the current user if they are a standard user/client
+        $query = Order::whereIn('id', $ids);
+        if (in_array($userRole, ['user', 'client'])) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $orders = $query->with(['user', 'product'])->get();
+
+        if ($orders->isEmpty()) {
+            return response()->json(['message' => 'No orders found or access denied'], 403);
+        }
         
         // Update all statuses
         // Note: For bulk update, we check if we need to decrement stock for each order
         $messages = [
             'in_transit' => 'Votre commande est en cours de livraison.',
+            'arrived' => 'Votre commande est arrivée ! vous pouvez confirmer la réception.',
             'delivered' => 'Votre commande a été livrée.',
             'picked_up' => 'Votre commande a été récupérée.',
             'cancelled' => 'Votre commande a été annulée.'

@@ -19,15 +19,16 @@
               
               <button 
                 v-else-if="selectedOrder.status === 'in_transit'" 
-                @click="handleStatusUpdate('delivered')"
+                @click="handleStatusUpdate('arrived')"
                 class="btn-action btn-complete"
                 :disabled="updating"
               >
                   {{ updating ? 'Chargement...' : 'Commande livrée' }}
               </button>
               
-              <div v-else-if="selectedOrder.status === 'delivered'" class="delivery-complete-badge">
-                  <i class='bx bxs-check-circle'></i> Cette commande a été livrée
+              <div v-else-if="['arrived', 'delivered'].includes(selectedOrder.status)" class="delivery-complete-badge">
+                  <i class='bx bxs-check-circle'></i> 
+                  {{ selectedOrder.status === 'arrived' ? 'Livraison effectuée (attente client)' : 'Cette commande a été livrée' }}
               </div>
           </div>
       </div>
@@ -45,15 +46,15 @@
     </div>
 
     <div v-else class="details-container">
-        
-
-
         <!-- Carte de livraison -->
         <div class="map-section">
             <h3>Lieu de livraison</h3>
             <template v-if="deliveryLocation">
-                 <p v-if="deliveryLocation.distanceKm" class="distance-info">
+                 <p v-if="deliveryLocation.distanceKm && !currentLocation" class="distance-info">
                      Distance estimée : <strong>{{ deliveryLocation.distanceKm }} km</strong>
+                 </p>
+                 <p v-if="currentLocation" class="distance-info live-status">
+                     <i class='bx bxs-navigation bx-fade-right'></i> Tracking en temps réel activé
                  </p>
                  <div class="map-container">
                     <l-map ref="map" v-model:zoom="zoom" :center="mapCenter">
@@ -63,9 +64,17 @@
                             name="OpenStreetMap"
                         ></l-tile-layer>
                         
-                        <!-- Shop Marker -->
-                        <l-marker :lat-lng="shopLocation">
+                        <!-- Shop Marker (Only if not in transit or no GPS) -->
+                        <l-marker v-if="!currentLocation" :lat-lng="shopLocation">
                             <l-tooltip>Notre Boutique (Départ)</l-tooltip>
+                        </l-marker>
+
+                        <!-- Livreur Live Marker -->
+                        <l-marker v-if="currentLocation" :lat-lng="currentLocation">
+                            <l-icon :icon-size="[32, 32]" :icon-anchor="[16, 16]" class-name="live-marker">
+                                <i class='bx bxs-truck' style="color: var(--primary); font-size: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>
+                            </l-icon>
+                            <l-tooltip>Votre position actuelle</l-tooltip>
                         </l-marker>
 
                         <!-- Client Location Marker -->
@@ -73,8 +82,8 @@
                             <l-tooltip>Client (Arrivée)</l-tooltip>
                         </l-marker>
 
-                        <!-- Trajet Line -->
-                        <l-polyline :lat-lngs="[shopLocation, [deliveryLocation.lat, deliveryLocation.lng]]" color="#FF5722" :weight="3" dashArray="10, 10"></l-polyline>
+                        <!-- Trajet Line (Live path if tracking, else static) -->
+                        <l-polyline :lat-lngs="[currentLocation || shopLocation, [deliveryLocation.lat, deliveryLocation.lng]]" color="#FF5722" :weight="3" dashArray="10, 10"></l-polyline>
                     </l-map>
                  </div>
             </template>
@@ -84,18 +93,17 @@
                  </div>
             </template>
         </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOrderStore } from '@/stores/orders';
 
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LMarker, LPolyline, LTooltip } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LPolyline, LTooltip, LIcon } from "@vue-leaflet/vue-leaflet";
 import L from "leaflet";
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -118,10 +126,14 @@ const orderId = ref(route.params.id);
 
 const zoom = ref(13);
 const shopLocation = ref([4.038026, 9.741443]); // coord fixe boutique
+const currentLocation = ref(null);
+const watchPositionId = ref(null);
 
 const mapCenter = computed(() => {
+    if (currentLocation.value && deliveryLocation.value) {
+        return currentLocation.value;
+    }
     if (deliveryLocation.value) {
-        // centrer entre les deux points : (lat1+lat2)/2, (lng1+lng2)/2
         const midLat = (shopLocation.value[0] + deliveryLocation.value.lat) / 2;
         const midLng = (shopLocation.value[1] + deliveryLocation.value.lng) / 2;
         return [midLat, midLng];
@@ -153,13 +165,47 @@ const relatedItems = computed(() => {
     );
 });
 
+const startTracking = () => {
+    if (!navigator.geolocation) {
+        console.error("La géolocalisation n'est pas supportée par votre navigateur.");
+        return;
+    }
+
+    watchPositionId.value = navigator.geolocation.watchPosition(
+        (position) => {
+            currentLocation.value = [position.coords.latitude, position.coords.longitude];
+        },
+        (error) => {
+            console.error("Erreur de géolocalisation:", error);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        }
+    );
+};
+
+const stopTracking = () => {
+    if (watchPositionId.value !== null) {
+        navigator.geolocation.clearWatch(watchPositionId.value);
+        watchPositionId.value = null;
+    }
+};
+
+watch(() => selectedOrder.value?.status, (newStatus) => {
+    if (newStatus === 'in_transit') {
+        startTracking();
+    } else {
+        stopTracking();
+    }
+}, { immediate: true });
+
 onMounted(async () => {
     loading.value = true;
     if (orderStore.orders.length === 0) {
         await orderStore.fetchOrders();
     }
-    // Trouver la commande correspondant dans le store
-    // Soit pour Livreur simple, soit dans les items de groupes pour OrdersView admin/livreur
     let found = orderStore.orders.find(o => o.id === orderId.value);
     
     if (found) {
@@ -168,15 +214,17 @@ onMounted(async () => {
     loading.value = false;
 });
 
+onUnmounted(() => {
+    stopTracking();
+});
+
 const handleStatusUpdate = async (newStatus) => {
     if (updating.value) return;
     updating.value = true;
     try {
-        // Update all related items in bulk (single request, single notification)
         const ids = relatedItems.value.map(o => o.id);
         await orderStore.updateOrdersStatusBulk(ids, newStatus);
         
-        // Refresh local data
         const fresh = orderStore.orders.find(o => o.id === orderId.value);
         if (fresh) {
             selectedOrder.value = fresh;
@@ -191,6 +239,7 @@ const formatStatus = (status) => {
         pending: 'En attente',
         paid: 'Payée',
         in_transit: 'En cours',
+        arrived: 'Arrivée',
         delivered: 'Livrée',
         cancelled: 'Annulée'
     };

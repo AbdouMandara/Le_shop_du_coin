@@ -103,12 +103,23 @@
                  <i class='bx bx-show'></i> Détails
               </button>
 
+              <button 
+                 v-if="authStore.isAdmin"
+                 @click="downloadInvoice(group.items[0].id)" 
+                 class="btn-download-minimal"
+                 title="Télécharger la facture"
+                 style="background-color: var(--neutral); color: var(--text); border: 1px solid var(--border); padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600;"
+              >
+                 <i class='bx bx-printer'></i> Facture
+              </button>
+
               <template v-if="authStore.isLivreur">
                   <template v-if="group.status !== 'delivered' && group.status !== 'cancelled'">
                       <select :value="group.status" @change="updateGroupStatus(group, $event.target.value)" class="status-select">
                           <option value="pending" :disabled="group.status !== 'pending'">Nouvelle (En attente)</option>
                           <option value="paid" :disabled="group.status !== 'paid' && group.status !== 'pending'">Nouvelle (Payée)</option>
                           <option value="in_transit" :disabled="group.status === 'in_transit' || group.status === 'delivered' || group.status === 'picked_up'">En cours de livraison</option>
+                          <option value="arrived" :disabled="group.status !== 'in_transit'">Livraison effectuée</option>
                       </select>
                   </template>
                   <template v-else-if="group.status === 'delivered'">
@@ -150,7 +161,7 @@
 
               <!-- Confirmation Button for Client -->
               <button 
-                 v-if="['paid', 'in_transit'].includes(group.status)"
+                 v-if="(group.delivery && group.status === 'arrived') || (!group.delivery && ['paid', 'in_transit', 'arrived'].includes(group.status))"
                  @click="confirmGroupReception(group)" 
                  class="btn-confirm-reception"
                  title="Confirmer la réception de la commande"
@@ -159,6 +170,7 @@
               </button>
 
               <button 
+                 v-if="['delivered', 'picked_up'].includes(group.status)"
                  @click="downloadInvoice(group.items[0].id)" 
                  class="btn-download-minimal"
                  title="Télécharger la facture de la commande"
@@ -376,6 +388,7 @@ const formatStatus = (status) => {
         pending: 'En attente',
         paid: 'Payée',
         in_transit: 'En cours',
+        arrived: 'Arrivée',
         delivered: 'Livrée',
         picked_up: 'Récupérée',
         cancelled: 'Annulée'
@@ -391,6 +404,7 @@ const getClientStatus = (group) => {
     if (!group.delivery) return "Prête pour retrait"; // If paid but not delivered
     if (group.status === 'paid' && group.delivery) return "En attente d'expédition";
     if (group.status === 'in_transit') return "En cours de livraison";
+    if (group.status === 'arrived' && group.delivery) return "Le livreur est arrivé";
     
     return formatStatus(group.status);
 };

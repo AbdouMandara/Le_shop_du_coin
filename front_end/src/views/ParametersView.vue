@@ -180,7 +180,7 @@
           <button
             type="submit"
             class="btn-save"
-            :disabled="loading || pwdMismatch"
+            :disabled="loading"
             form="profile-form"
           >
             <span v-if="!loading">
@@ -234,10 +234,7 @@ const roleLabel = computed(() => {
   return map[typeof role === 'string' ? role : role?.label] || 'Utilisateur';
 });
 
-const pwdMismatch = computed(() =>
-  form.password && form.password_confirmation &&
-  form.password !== form.password_confirmation
-);
+
 
 // Password strength
 const strength = computed(() => {

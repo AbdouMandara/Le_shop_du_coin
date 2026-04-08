@@ -238,11 +238,11 @@ const adminLinks = [
   { label: 'Livreurs', path: '/admin/livreurs', icon: 'bx bx-cycling' },
   { label: 'Promotions', path: '/admin/promotions', icon: 'bx bx-purchase-tag-alt' },
   { label: 'Commandes', path: '/admin/orders', icon: 'bx bx-package' },
+  { label: 'Prospects', path: '/admin/newsletters', icon: 'bx bx-group' },
 ];
 
 const livreurLinks = [
-  { label: 'Dashboard', path: '/livreur', icon: 'bx bx-shield-quarter' },
-  { label: 'Commandes', path: '/livreur/orders', icon: 'bx bx-package' },
+  { label: 'Commandes', path: '/livreur', icon: 'bx bx-shield-quarter' },
 ];
 
 const navLinks = computed(() => {
