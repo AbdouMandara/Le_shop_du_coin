@@ -48,6 +48,22 @@
       <div v-if="step === 2" class="checkout-step">
         <div class="map-section">
           
+          <div class="map-search-bar">
+            <div class="search-input-wrapper">
+                <i class='bx bx-search search-icon'></i>
+                <input 
+                    type="text" 
+                    v-model="searchQuery" 
+                    placeholder="Rechercher un lieu (ex: Douala Akwa)..." 
+                    @keyup.enter="searchLocation"
+                />
+            </div>
+            <button class="btn-search-map" @click="searchLocation" :disabled="searching">
+                <span v-if="!searching">Chercher</span>
+                <i v-else class='bx bx-loader-alt bx-spin'></i>
+            </button>
+          </div>
+          
           <div class="map-container">
             <l-map ref="map" v-model:zoom="zoom" :center="center" @click="onMapClick">
               <l-tile-layer
@@ -213,10 +229,39 @@ const deliveryMode = ref('sans_livraison');
 
 // Map configuration
 const zoom = ref(13);
+const searchQuery = ref('');
+const searching = ref(false);
 
 const shopLocation = ref([4.038026, 9.741443]);// longitude et lagitude de la boutique
 const center = ref([4.038026, 9.741443]);
 const marker = ref(null); 
+
+const searchLocation = async () => {
+    if (!searchQuery.value.trim()) return;
+    
+    searching.value = true;
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery.value)}`);
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+            const firstResult = data[0];
+            const lat = parseFloat(firstResult.lat);
+            const lng = parseFloat(firstResult.lon);
+            
+            center.value = [lat, lng];
+            marker.value = { lat, lng };
+            zoom.value = 16; 
+        } else {
+            alert("Lieu non trouvé. Veuillez être plus précis (ex: 'Douala, Akwa').");
+        }
+    } catch (err) {
+        console.error("Geocoding error:", err);
+        alert("Une erreur lors de la recherche.");
+    } finally {
+        searching.value = false;
+    }
+};
 
 onMounted(async () => {
     // Validate cart items to remove deleted products
@@ -412,6 +457,56 @@ const handleConfirm = async () => {
     border-radius: 12px;
     overflow: hidden;
     border: 2px solid var(--border);
+}
+
+.map-search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrapper i {
+    position: absolute;
+    left: 1rem;
+    color: #888;
+    font-size: 1.2rem;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 2.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.btn-search-map {
+    padding: 0 1.5rem;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-search-map:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+.btn-search-map:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .coords-info {
