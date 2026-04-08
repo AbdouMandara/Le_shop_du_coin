@@ -58,6 +58,14 @@
                     @keyup.enter="searchLocation"
                 />
             </div>
+            <button 
+                class="btn-location" 
+                @click="useCurrentLocation" 
+                title="Utiliser ma position actuelle"
+                :disabled="searching"
+            >
+                <i class='bx bx-target-lock'></i>
+            </button>
             <button class="btn-search-map" @click="searchLocation" :disabled="searching">
                 <span v-if="!searching">Chercher</span>
                 <i v-else class='bx bx-loader-alt bx-spin'></i>
@@ -267,6 +275,32 @@ const fetchRoadRoute = async () => {
 watch(marker, () => {
     fetchRoadRoute();
 });
+
+const useCurrentLocation = () => {
+    if (!navigator.geolocation) {
+        alert("La géolocalisation n'est pas supportée par votre navigateur.");
+        return;
+    }
+
+    searching.value = true;
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const newPos = { lat: latitude, lng: longitude };
+            
+            center.value = [latitude, longitude];
+            marker.value = newPos;
+            zoom.value = 16;
+            searching.value = false;
+        },
+        (error) => {
+            console.error("Geolocation error:", error);
+            alert("Impossible de récupérer votre position. Assurez-vous d'avoir autorisé l'accès.");
+            searching.value = false;
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+    );
+};
 
 const searchLocation = async () => {
     if (!searchQuery.value.trim()) return;
@@ -537,7 +571,31 @@ const handleConfirm = async () => {
     filter: brightness(1.1);
 }
 
-.btn-search-map:disabled {
+.btn-location {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--surface);
+    color: var(--primary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-location:hover:not(:disabled) {
+    background-color: var(--neutral);
+    border-color: var(--primary);
+}
+
+.btn-location i {
+    font-size: 1.5rem;
+}
+
+.btn-search-map:disabled, .btn-location:disabled {
     opacity: 0.7;
     cursor: not-allowed;
 }
