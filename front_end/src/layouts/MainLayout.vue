@@ -26,9 +26,23 @@
       <nav v-if="authStore.isAuthenticated" class="header-nav-container">
         <div class="header-nav-icons">
           <template v-for="link in navLinks" :key="link.path">
-            <!-- Normal Links -->
+            <!-- External Help Link -->
+            <a 
+              v-if="link.isExternal"
+              :href="link.path"
+              target="_blank"
+              class="header-icon-link"
+              :title="link.label"
+            >
+              <div class="icon-wrapper">
+                <i :class="link.icon"></i>
+              </div>
+              <span class="link-label">{{ link.label }}</span>
+            </a>
+
+            <!-- Normal Router Links -->
             <router-link 
-              v-if="link.id !== 'cart' && link.id !== 'favorites'"
+              v-else-if="link.id !== 'cart' && link.id !== 'favorites'"
               :to="link.path"
               class="header-icon-link"
               :title="link.label"
@@ -217,8 +231,8 @@ const router = useRouter();
 const route = useRoute();
 
 const showHelp = computed(() => {
-    // Show only on home page OR client paths
-    return route.name === 'home' || route.path.startsWith('/client');
+    // Show the separate icon button ONLY for guest users on the landing page
+    return route.name === 'home' && !authStore.isAuthenticated;
 });
 
 const showFavDropdown = ref(false);
@@ -244,6 +258,7 @@ const clientLinks = [
   { label: 'Produits', path: '/client/products', icon: 'bx bx-grid-alt' },
   { label: 'Favoris', path: '/client/favorites', icon: 'bx bx-heart', id: 'favorites' },
   { label: 'Commandes', path: '/client/orders', icon: 'bx bx-package' },
+  { label: 'Aide', path: 'https://wa.me/237678457755', icon: 'bx bxl-whatsapp', isExternal: true },
   { label: 'Notifications', path: '/client/notifications', icon: 'bx bx-bell', id: 'notifications' },
   { label: 'Panier', path: '/client/cart', icon: 'bx bx-cart', id: 'cart' },
 ];

@@ -62,8 +62,10 @@ const showPreview = ref(false);
 const containerRef = ref(null);
 
 const isVisible = computed(() => {
+  // Hide on any client-prefixed path
+  if (route.path.startsWith('/client')) return false;
+
   if (route.name === 'home' && !authStore.isAuthenticated) return true;
-  if (route.name === 'client-products' || route.path === '/client/products') return true;
   if (route.name === 'products' || route.path === '/products') return true;
   return false;
 });
